@@ -121,3 +121,9 @@ Pipeline a marcar sucesso quando Helm/kubectl falhavam (avisos "Warning: failed 
 Acumular falhas nos deploys e só `exit 1` no final (em vez de fail-fast).
 
 **Resultado:** `deploy-workload.sh` e `deploy-cronjobs.sh` contam falhas com `if ! helm`/`if ! kubectl`, listam itens falhados no stderr e terminam com código 1 se `failures > 0`; `cd`/`yq` mantêm `set -e`.
+
+### Prompt 21
+
+CockroachDB: disco 10G em development e production, StorageClass `local-path`.
+
+**Resultado:** `values-production.yaml`: `storage` de `20Gi` para `10Gi`; `values-development.yaml` já estava `10Gi` com `local-path`.
