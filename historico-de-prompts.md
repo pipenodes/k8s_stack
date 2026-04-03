@@ -151,3 +151,9 @@ Criar `deploy.ack` com conteúdo `1` na raiz de `development/` e de `production/
 Timestamp nos `deploy.ack`: preferir formato melhor que Julian.
 
 **Resultado:** Valor por defeito nos scripts passou a **ISO 8601 UTC** (`YYYY-MM-DDTHH:MM:SSZ`); README-deploy-ack e HOWTO atualizados; `bump-deploy-ack.ps1` aplicado para alinhar ficheiros `deploy.ack`.
+
+### Prompt 26
+
+Implementar plano "correção deploy workload-obs (EKS)": ordem KPS primeiro, `fullnameOverride` por ambiente, namespace vault na fase obs, documentação.
+
+**Resultado:** `deploy-workload.sh`: `workload-obs` instala `kube-prometheus-stack` antes do resto (restante em ordem `LC_ALL=C`); cria `<env>-workload-vault` idempotente; `kube-prometheus-stack/values-development.yaml` e `values-production.yaml` com `fullnameOverride` distinto; HOWTO §6 e bullets em §1/§3; este registo.

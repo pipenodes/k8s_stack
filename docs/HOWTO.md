@@ -8,6 +8,7 @@ Guia operacional para navegar no monorepo, configurar clusters e perceber o que 
 - **Namespace no cluster:** `<repoPath>-<workload>` — exemplo: pasta `development/workload-common` → namespace **`development-workload-common`**.
 - **Deploy:** GitHub Actions na branch `main`, com filtros de paths; cada job usa um **GitHub Environment** (`development`, `staging`, `production`) para secrets.
 - **Ordem no CI (mesmo job):** com `KUBE_PROVIDER=k3s`, após kubeconfig válido aplica-se a **StorageClass** [`config/k8s/storageclass-local-path.yaml`](../config/k8s/storageclass-local-path.yaml); depois **`workload-obs`** (Prometheus CRDs), **`workload-vault`**, **`workload-common`**, **`cron-jobs`**. Um push que altere só `workload-common` não corre obs nesse run — o cluster deve já ter observabilidade (ou correr antes um deploy de `workload-obs`). Em **EKS** o passo da StorageClass não corre (`rancher.io/local-path` é específico do K3s).
+- **Dentro de `workload-obs`:** o [`deploy-workload.sh`](../.github/scripts/deploy-workload.sh) instala **`kube-prometheus-stack` antes** dos outros charts (ordem alfabética entre o resto), para existirem CRDs do Prometheus Operator antes de charts que criam `ServiceMonitor` (ex.: Grafana). No mesmo passo, cria-se de forma idempotente o namespace **`<env>-workload-vault`** quando ainda não correu o job `workload-vault` (ex.: OpenTelemetry com `namespaceOverride` para vault).
 - **K3s + Traefik:** com `k3s`, o script **não** faz `helm` da pasta `traefik` em `workload-common` (usa o Traefik nativo do K3s).
 - **CockroachDB:** antes do `helm` do chart `cockroachdb`, o CI corre [`.github/scripts/apply-crdb-operator-crds.sh`](../.github/scripts/apply-crdb-operator-crds.sh) (CRD remoto; opcional `CRDB_OPERATOR_CRD_REF` para fixar tag/commit). Após alterar `Chart.yaml` de charts com dependências, corre localmente `helm dependency update` e commit dos `charts/*.tgz` / `Chart.lock` se existir.
 - **CockroachDB** (`workload-common/cockroachdb/`): chart oficial [cockroachdb-parent](https://github.com/cockroachdb/helm-charts/tree/master/cockroachdb-parent) (CockroachDB Operator + CRDB). O CI usa `helm upgrade` como nas outras apps; primeiro deploy pode demorar (CRDs, operator, certificados). Ajusta em `values-*-*.yaml` os campos `operator.cloudRegion` e `cockroachdb.cockroachdb.crdbCluster.regions[].code` para coincidirem com `topology.kubernetes.io/region` nos nós, se existir.
@@ -64,7 +65,7 @@ Cada chart tem chaves diferentes (`replicaCount` vs `replica.replicaCount`, etc.
 | `configure-kube.sh` | `eks` → `aws eks update-kubeconfig` (2.º arg = nome do cluster); `k3s` → lê **`KUBE_CONFIG`** (texto do kubeconfig), grava ficheiro; o `source apply-kubeconfig-env.sh` no mesmo `run` exporta **`KUBECONFIG`** = path. |
 | `ensure-local-path-storageclass.sh` | Se `KUBE_PROVIDER=k3s`, `kubectl apply` da StorageClass `local-path` em `config/k8s/`. |
 | `apply-crdb-operator-crds.sh` | `kubectl apply` do CRD `CrdbCluster` a partir do repositório `cockroachdb-operator` (ref `CRDB_OPERATOR_CRD_REF`, default `master`). |
-| `deploy-workload.sh` | Cria namespace do workload; Helm/kubectl por pasta; em `k3s` salta chart `traefik`; antes de cockroachdb aplica CRDs; merge dos overrides de topologia. |
+| `deploy-workload.sh` | Cria namespace do workload; Helm/kubectl por pasta; em `k3s` salta chart `traefik`; antes de cockroachdb aplica CRDs; merge dos overrides de topologia. Em **`workload-obs`:** `kube-prometheus-stack` primeiro; namespace `<env>-workload-vault` criado se necessário. |
 | `deploy-cronjobs.sh` | `kubectl apply` em `cron-jobs/`. |
 | [`tools/bump-deploy-ack.sh`](../tools/bump-deploy-ack.sh) / [`bump-deploy-ack.ps1`](../tools/bump-deploy-ack.ps1) | Atualizam todos os `deploy.ack` com timestamp **ISO 8601 UTC** (`YYYY-MM-DDTHH:MM:SSZ`) para o paths-filter disparar deploy; ver [README-deploy-ack](../tools/README-deploy-ack.md). |
 
@@ -82,3 +83,11 @@ O workflow chama `configure-kube.sh` com **dois argumentos** apenas quando `KUBE
 3. **`values-development.yaml` / `values-staging.yaml` / `values-production.yaml`** por chart — controlo fino (ex.: Redis: standalone em dev, sem anti-affinity em prod).
 
 Ver também [examples.md](examples.md).
+
+## 6. `kube-prometheus-stack`: nomes cluster-wide e recuperação
+
+Os `ClusterRole` / hooks de admission do chart usam o **`fullnameOverride`** definido em `values-development.yaml` / `values-production.yaml` (ex.: `development-kube-prometheus-stack` vs `production-kube-prometheus-stack`), para **evitar colisão** no mesmo cluster físico entre namespaces `development-workload-obs` e `production-workload-obs` (recursos cluster-scoped partilham o cluster inteiro).
+
+O **seletor de `ServiceMonitor`** do Prometheus continua a usar o **nome do release Helm** (`kube-prometheus-stack`, igual ao nome da pasta), não o `fullnameOverride` — por isso as labels `release: kube-prometheus-stack` nos charts dependentes (ex.: Grafana) mantêm-se alinhadas.
+
+Se um deploy falhar a meio e ficarem objetos órfãos do hook de admission, rever com `kubectl get clusterrole,clusterrolebinding | rg admission` (ou equivalente) e remover os associados ao release antigo, ou `helm uninstall <release> -n <namespace>` conforme o estado, antes de voltar a correr o CI.

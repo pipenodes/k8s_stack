@@ -15,6 +15,12 @@ cd "${ROOT}/${ENV_DIR}/${WORKLOAD}"
 
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
+# OpenTelemetry (e outros) podem referir <env>-workload-vault antes do passo workload-vault no CI.
+if [ "${WORKLOAD}" = "workload-obs" ]; then
+  VAULT_NS="${ENV_DIR}-workload-vault"
+  kubectl create namespace "${VAULT_NS}" --dry-run=client -o yaml | kubectl apply -f -
+fi
+
 helm_topology_args=()
 if [ -f "${TOPOLOGY_MAP}" ] && command -v yq >/dev/null 2>&1; then
   MODE=$(yq -r ".environments.${ENV_DIR}.topology.deploymentMode // \"standalone\"" "${TOPOLOGY_MAP}")
@@ -27,7 +33,28 @@ fi
 failures=0
 failed_items=()
 
-for application_folder_name in */; do
+# workload-obs: kube-prometheus-stack primeiro (CRDs / operator) para charts com ServiceMonitor (ex.: Grafana).
+shopt -s nullglob
+workload_obs_ordered_dirs() {
+  local d
+  if [ -d "kube-prometheus-stack" ]; then
+    printf '%s\n' "kube-prometheus-stack/"
+  fi
+  while IFS= read -r d; do
+    [ -z "$d" ] && continue
+    [ "$d" = "kube-prometheus-stack/" ] && continue
+    printf '%s\n' "$d"
+  done < <(printf '%s\n' */ | LC_ALL=C sort)
+}
+
+if [ "${WORKLOAD}" = "workload-obs" ]; then
+  readarray -t obs_dirs < <(workload_obs_ordered_dirs)
+  chart_iter=("${obs_dirs[@]}")
+else
+  chart_iter=(*/)
+fi
+
+for application_folder_name in "${chart_iter[@]}"; do
   basename_application_folder=$(basename "$application_folder_name")
   if [ -f "$basename_application_folder/Chart.yaml" ]; then
     if [ "$basename_application_folder" = "traefik" ] && [ "${KUBE_PROVIDER:-}" = "k3s" ]; then

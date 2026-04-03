@@ -19,8 +19,9 @@ kubeTargetVersionOverride: ""
 kubeVersionOverride: ""
 
 ## Provide a name to substitute for the full names of resources
+## Cluster-scoped (ex.: admission ClusterRole) deve ser único por ambiente no mesmo cluster.
 ##
-fullnameOverride: ""
+fullnameOverride: "production-kube-prometheus-stack"
 
 ## Labels to apply to all resources
 ##
