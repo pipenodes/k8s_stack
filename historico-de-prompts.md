@@ -163,3 +163,9 @@ Implementar plano "correção deploy workload-obs (EKS)": ordem KPS primeiro, `f
 Executar plano RBAC multi-env + K3s control-plane: remover `nodeSelector` legados (EKS `ng:*`), overrides `config/helm-overrides/k3s/*.yaml`, merge condicional em `deploy-workload.sh`, nomes únicos Loki/Promtail/OTel, URLs gateway Loki, timeout KPS, documentação.
 
 **Resultado:** Removidos `ng: obs-default-*` / `common-default-*` e tolerations `workload-type` dos `values-*.yaml` afetados; `config/helm-overrides/k3s/` por chart; `deploy-workload.sh` com `-f` K3s e `--timeout 20m` para `kube-prometheus-stack`; `fullnameOverride` Loki/Promtail; `clusterRole` OTel; URLs `*-loki-gateway` em OTel, Promtail e Traefik; HOWTO §7–§8; tabela §3; este registo.
+
+### Prompt 28
+
+Regenerar timestamps em todos os `deploy.ack` (paths-filter) e commit + push.
+
+**Resultado:** `tools/bump-deploy-ack.ps1` (ISO 8601 UTC); `git commit` + `git push` em `main`.
