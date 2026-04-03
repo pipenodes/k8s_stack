@@ -30,19 +30,23 @@ environments:
 
 No GitHub, podes usar o **mesmo** secret **`KUBECONFIG`** nos três Environments **se** for o mesmo API server; a separação fica nos namespaces `development-workload-*`, etc.
 
-## Exemplo 2 — Gerar o valor do secret `KUBECONFIG` (Linux/macOS)
+## Exemplo 2 — Preencher o secret `KUBECONFIG` (texto do kubeconfig)
+
+Na UI do GitHub → Environment → Add secret → cola o **conteúdo completo** do ficheiro (YAML), multilinha.
+
+Linux/macOS (mostrar no terminal e copiar):
 
 ```bash
-# A partir de um ficheiro kubeconfig
-base64 -w0 ~/.kube/config > kube.b64.txt
-# Colar o conteúdo de kube.b64.txt no secret KUBECONFIG do GitHub Environment
+cat ~/.kube/config
 ```
 
-No Windows (PowerShell):
+Windows (PowerShell):
 
 ```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.kube\config"))
+Get-Content "$env:USERPROFILE\.kube\config" -Raw
 ```
+
+Opcional — se tiveres o kubeconfig em base64, descodifica localmente e cola o **YAML** no secret; o CI **não** descodifica base64.
 
 ## Exemplo 3 — Preencher `topology-standalone.yaml` (override global)
 

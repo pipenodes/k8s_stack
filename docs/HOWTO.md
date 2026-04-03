@@ -21,7 +21,7 @@ Guia operacional para navegar no monorepo, configurar clusters e perceber o que 
 
 Contrato de **nomes de secrets** esperados por provedor (EKS, K3s, …). Os **valores** configuram-se na UI do GitHub → Settings → Environments.
 
-Para **K3s**, o essencial é o secret **`KUBECONFIG`** (conteúdo do kubeconfig em base64, uma linha) por Environment.
+Para **K3s**, o essencial é o secret **`KUBECONFIG`** com o **conteúdo YAML** do kubeconfig em **texto claro** (multilinha na UI do GitHub), por Environment.
 
 ### `workload-topology.yaml`
 
@@ -57,7 +57,7 @@ Cada chart tem chaves diferentes (`replicaCount` vs `replica.replicaCount`, etc.
 | Script | Função |
 |--------|--------|
 | `load-cluster-env.sh` | Lê `cluster-map.yaml` (+ topologia) e exporta `KUBE_PROVIDER`, `EKS_CLUSTER_NAME` (se EKS), `TOPOLOGY_MODE`, etc. para o job. |
-| `configure-kube.sh` | `eks` → `aws eks update-kubeconfig`; `k3s` → lê env `KUBECONFIG` (base64), escreve ficheiro e exporta `KUBECONFIG` para o caminho. |
+| `configure-kube.sh` | `eks` → `aws eks update-kubeconfig` (2.º arg = nome do cluster); `k3s` → lê env `KUBECONFIG` (texto do kubeconfig), escreve ficheiro e exporta `KUBECONFIG` para o caminho. |
 | `deploy-workload.sh` | Helm/kubectl por pasta de app; merge dos overrides de topologia como acima. |
 | `deploy-cronjobs.sh` | `kubectl apply` em `cron-jobs/`. |
 
@@ -65,6 +65,8 @@ Cada chart tem chaves diferentes (`replicaCount` vs `replica.replicaCount`, etc.
 
 - **`k8s-deploy.yml`:** jobs `deploy-development` e `deploy-production`; **credenciais AWS** só quando `KUBE_PROVIDER == eks` (após carregar o mapa).
 - **`deployment-restart.yml`:** restart manual de um Deployment; mesmo critério para AWS.
+
+O workflow chama `configure-kube.sh` com **dois argumentos** apenas quando `KUBE_PROVIDER=eks` (nome do cluster); com **K3s** passa só o provedor — `EKS_CLUSTER_NAME` não é definido pelo `load-cluster-env.sh` quando o mapa é K3s.
 
 ## 5. Onde afinar custo / scheduling
 

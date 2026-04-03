@@ -59,7 +59,7 @@ O [`deploy-workload.sh`](.github/scripts/deploy-workload.sh) faz merge de `confi
 
 ## Clusters e namespaces
 
-- **K3s:** configurar o secret **`KUBECONFIG`** (conteúdo do kubeconfig em **base64**, uma linha) em cada **GitHub Environment** (`development`, `staging`, `production`). O passo **Credenciais AWS** no workflow só corre se `KUBE_PROVIDER == eks` (após carregar o mapa).
+- **K3s:** configurar o secret **`KUBECONFIG`** com o **conteúdo textual** do ficheiro kubeconfig (a UI do GitHub aceita **multilinha**; não usar base64). O passo **Credenciais AWS** no workflow só corre se `KUBE_PROVIDER == eks` (após carregar o mapa).
 
 ## GitHub Actions
 
@@ -69,6 +69,8 @@ O [`deploy-workload.sh`](.github/scripts/deploy-workload.sh) faz merge de `confi
 | [`.github/workflows/deployment-restart.yml`](.github/workflows/deployment-restart.yml) | Restart manual; mesmo fluxo de credenciais condicionais. |
 
 Scripts: [`configure-kube.sh`](.github/scripts/configure-kube.sh), [`load-cluster-env.sh`](.github/scripts/load-cluster-env.sh), [`deploy-workload.sh`](.github/scripts/deploy-workload.sh), [`deploy-cronjobs.sh`](.github/scripts/deploy-cronjobs.sh).
+
+**EKS vs K3s:** o [`load-cluster-env.sh`](.github/scripts/load-cluster-env.sh) só exporta `EKS_CLUSTER_NAME` quando o [`cluster-map.yaml`](config/cluster-map.yaml) tem `provider: eks` para o `clusterRef` do ambiente. Com **K3s**, o workflow usa apenas o secret `KUBECONFIG`; não é necessário nome de cluster EKS no CI.
 
 ### Secrets
 

@@ -67,3 +67,9 @@ Em todo o projeto, trocar `KUBE_CONFIG_B64` por `KUBECONFIG` apenas.
 Histórico novo: um único commit com estado atual limpo + `git push --force-with-lease`.
 
 **Resultado:** Branch órfã com commit `d818e60`; `main` substitui histórico antigo; push para `origin` concluído (sem push protection por segredos no histórico antigo).
+
+### Prompt 12
+
+Plano: `KUBECONFIG` em texto claro (sem base64 no CI); workflows chamam `configure-kube` com 2 args só para EKS; documentação alinhada.
+
+**Resultado:** `configure-kube.sh` grava YAML direto; README, HOWTO, examples, `github-environments.yaml`; `k8s-deploy.yml` e `deployment-restart.yml` com `if [ KUBE_PROVIDER = eks ]`.
