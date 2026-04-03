@@ -65,10 +65,10 @@ O [`deploy-workload.sh`](.github/scripts/deploy-workload.sh) faz merge de `confi
 
 | Workflow | Descrição |
 |----------|-----------|
-| [`.github/workflows/k8s-deploy.yml`](.github/workflows/k8s-deploy.yml) | `deploy-development` / `deploy-production` com `environment` + `load-cluster-env.sh` (provedor + topologia). |
+| [`.github/workflows/k8s-deploy.yml`](.github/workflows/k8s-deploy.yml) | `deploy-development` / `deploy-production`: K3s aplica **StorageClass `local-path`**, depois **obs → vault → common → cron**; ver [HOWTO](docs/HOWTO.md). |
 | [`.github/workflows/deployment-restart.yml`](.github/workflows/deployment-restart.yml) | Restart manual; mesmo fluxo de credenciais condicionais. |
 
-Scripts: [`configure-kube.sh`](.github/scripts/configure-kube.sh), [`apply-kubeconfig-env.sh`](.github/scripts/apply-kubeconfig-env.sh), [`load-cluster-env.sh`](.github/scripts/load-cluster-env.sh), [`deploy-workload.sh`](.github/scripts/deploy-workload.sh), [`deploy-cronjobs.sh`](.github/scripts/deploy-cronjobs.sh).
+Scripts: [`configure-kube.sh`](.github/scripts/configure-kube.sh), [`apply-kubeconfig-env.sh`](.github/scripts/apply-kubeconfig-env.sh), [`load-cluster-env.sh`](.github/scripts/load-cluster-env.sh), [`ensure-local-path-storageclass.sh`](.github/scripts/ensure-local-path-storageclass.sh), [`apply-crdb-operator-crds.sh`](.github/scripts/apply-crdb-operator-crds.sh), [`deploy-workload.sh`](.github/scripts/deploy-workload.sh), [`deploy-cronjobs.sh`](.github/scripts/deploy-cronjobs.sh).
 
 **EKS vs K3s:** o [`load-cluster-env.sh`](.github/scripts/load-cluster-env.sh) só exporta `EKS_CLUSTER_NAME` quando o [`cluster-map.yaml`](config/cluster-map.yaml) tem `provider: eks` para o `clusterRef` do ambiente. Com **K3s**, o workflow injeta o secret `KUBECONFIG` em **`KUBE_CONFIG`** e, após `configure-kube.sh`, faz `source` de `apply-kubeconfig-env.sh` para exportar **`KUBECONFIG`** = caminho do ficheiro temporário (compatível com Helm/kubectl).
 

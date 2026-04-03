@@ -13,6 +13,8 @@ TOPOLOGY_MAP="${ROOT}/config/workload-topology.yaml"
 
 cd "${ROOT}/${ENV_DIR}/${WORKLOAD}"
 
+kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
 helm_topology_args=()
 if [ -f "${TOPOLOGY_MAP}" ] && command -v yq >/dev/null 2>&1; then
   MODE=$(yq -r ".environments.${ENV_DIR}.topology.deploymentMode // \"standalone\"" "${TOPOLOGY_MAP}")
@@ -28,9 +30,14 @@ failed_items=()
 for application_folder_name in */; do
   basename_application_folder=$(basename "$application_folder_name")
   if [ -f "$basename_application_folder/Chart.yaml" ]; then
+    if [ "$basename_application_folder" = "traefik" ] && [ "${KUBE_PROVIDER:-}" = "k3s" ]; then
+      echo "Skipping Helm chart traefik (KUBE_PROVIDER=k3s: usar Traefik nativo do K3s)."
+      continue
+    fi
     echo "Deploying Helm chart: $basename_application_folder into namespace ${NAMESPACE}"
     helm_extra_args=()
     if [ "$basename_application_folder" = "cockroachdb" ]; then
+      bash "${ROOT}/.github/scripts/apply-crdb-operator-crds.sh"
       helm_extra_args+=(--timeout 25m)
     fi
     # shellcheck disable=SC2086

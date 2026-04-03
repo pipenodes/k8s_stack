@@ -1,4 +1,5 @@
 # Deploy por paths: namespaces <repoPath>-workload-* (ver config/cluster-map.yaml).
+# Ordem: StorageClass (K3s) -> workload-obs -> workload-vault -> workload-common -> cron-jobs.
 name: Kubernetes deploy
 
 on:
@@ -80,8 +81,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      - name: Development workload-common
-        if: steps.filter.outputs.dev_common == 'true'
+      - name: StorageClass local-path (K3s)
+        if: (steps.filter.outputs.dev_common == 'true' || steps.filter.outputs.dev_vault == 'true' || steps.filter.outputs.dev_obs == 'true' || steps.filter.outputs.dev_cron == 'true') && env.KUBE_PROVIDER == 'k3s'
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
+          source .github/scripts/apply-kubeconfig-env.sh
+          bash .github/scripts/ensure-local-path-storageclass.sh
+
+      - name: Development workload-obs
+        if: steps.filter.outputs.dev_obs == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
@@ -92,7 +102,7 @@ jobs:
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
           source .github/scripts/apply-kubeconfig-env.sh
-          bash .github/scripts/deploy-workload.sh development workload-common values-development.yaml
+          bash .github/scripts/deploy-workload.sh development workload-obs values-development.yaml
 
       - name: Development workload-vault
         if: steps.filter.outputs.dev_vault == 'true'
@@ -108,8 +118,8 @@ jobs:
           source .github/scripts/apply-kubeconfig-env.sh
           bash .github/scripts/deploy-workload.sh development workload-vault values-development.yaml
 
-      - name: Development workload-obs
-        if: steps.filter.outputs.dev_obs == 'true'
+      - name: Development workload-common
+        if: steps.filter.outputs.dev_common == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
@@ -120,7 +130,7 @@ jobs:
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
           source .github/scripts/apply-kubeconfig-env.sh
-          bash .github/scripts/deploy-workload.sh development workload-obs values-development.yaml
+          bash .github/scripts/deploy-workload.sh development workload-common values-development.yaml
 
       - name: Development cron-jobs
         if: steps.filter.outputs.dev_cron == 'true'
@@ -184,8 +194,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      - name: Production workload-common
-        if: steps.filter.outputs.prod_common == 'true'
+      - name: StorageClass local-path (K3s)
+        if: (steps.filter.outputs.prod_common == 'true' || steps.filter.outputs.prod_vault == 'true' || steps.filter.outputs.prod_obs == 'true' || steps.filter.outputs.prod_cron == 'true') && env.KUBE_PROVIDER == 'k3s'
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
+          source .github/scripts/apply-kubeconfig-env.sh
+          bash .github/scripts/ensure-local-path-storageclass.sh
+
+      - name: Production workload-obs
+        if: steps.filter.outputs.prod_obs == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
@@ -196,7 +215,7 @@ jobs:
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
           source .github/scripts/apply-kubeconfig-env.sh
-          bash .github/scripts/deploy-workload.sh production workload-common values-production.yaml
+          bash .github/scripts/deploy-workload.sh production workload-obs values-production.yaml
 
       - name: Production workload-vault
         if: steps.filter.outputs.prod_vault == 'true'
@@ -212,8 +231,8 @@ jobs:
           source .github/scripts/apply-kubeconfig-env.sh
           bash .github/scripts/deploy-workload.sh production workload-vault values-production.yaml
 
-      - name: Production workload-obs
-        if: steps.filter.outputs.prod_obs == 'true'
+      - name: Production workload-common
+        if: steps.filter.outputs.prod_common == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
@@ -224,7 +243,7 @@ jobs:
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
           source .github/scripts/apply-kubeconfig-env.sh
-          bash .github/scripts/deploy-workload.sh production workload-obs values-production.yaml
+          bash .github/scripts/deploy-workload.sh production workload-common values-production.yaml
 
       - name: Production cron-jobs
         if: steps.filter.outputs.prod_cron == 'true'

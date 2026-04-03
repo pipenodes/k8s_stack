@@ -7,6 +7,9 @@ Guia operacional para navegar no monorepo, configurar clusters e perceber o que 
 - **Pastas por ambiente lógico:** `development/`, `staging/` (opcional), `production/` — cada uma com `workload-common`, `workload-vault`, `workload-obs`, `cron-jobs`.
 - **Namespace no cluster:** `<repoPath>-<workload>` — exemplo: pasta `development/workload-common` → namespace **`development-workload-common`**.
 - **Deploy:** GitHub Actions na branch `main`, com filtros de paths; cada job usa um **GitHub Environment** (`development`, `staging`, `production`) para secrets.
+- **Ordem no CI (mesmo job):** com `KUBE_PROVIDER=k3s`, após kubeconfig válido aplica-se a **StorageClass** [`config/k8s/storageclass-local-path.yaml`](../config/k8s/storageclass-local-path.yaml); depois **`workload-obs`** (Prometheus CRDs), **`workload-vault`**, **`workload-common`**, **`cron-jobs`**. Um push que altere só `workload-common` não corre obs nesse run — o cluster deve já ter observabilidade (ou correr antes um deploy de `workload-obs`). Em **EKS** o passo da StorageClass não corre (`rancher.io/local-path` é específico do K3s).
+- **K3s + Traefik:** com `k3s`, o script **não** faz `helm` da pasta `traefik` em `workload-common` (usa o Traefik nativo do K3s).
+- **CockroachDB:** antes do `helm` do chart `cockroachdb`, o CI corre [`.github/scripts/apply-crdb-operator-crds.sh`](../.github/scripts/apply-crdb-operator-crds.sh) (CRD remoto; opcional `CRDB_OPERATOR_CRD_REF` para fixar tag/commit). Após alterar `Chart.yaml` de charts com dependências, corre localmente `helm dependency update` e commit dos `charts/*.tgz` / `Chart.lock` se existir.
 - **CockroachDB** (`workload-common/cockroachdb/`): chart oficial [cockroachdb-parent](https://github.com/cockroachdb/helm-charts/tree/master/cockroachdb-parent) (CockroachDB Operator + CRDB). O CI usa `helm upgrade` como nas outras apps; primeiro deploy pode demorar (CRDs, operator, certificados). Ajusta em `values-*-*.yaml` os campos `operator.cloudRegion` e `cockroachdb.cockroachdb.crdbCluster.regions[].code` para coincidirem com `topology.kubernetes.io/region` nos nós, se existir.
 
 ## 2. Ficheiros em `config/`
@@ -59,12 +62,14 @@ Cada chart tem chaves diferentes (`replicaCount` vs `replica.replicaCount`, etc.
 |--------|--------|
 | `load-cluster-env.sh` | Lê `cluster-map.yaml` (+ topologia) e exporta `KUBE_PROVIDER`, `EKS_CLUSTER_NAME` (se EKS), `TOPOLOGY_MODE`, etc. para o job. |
 | `configure-kube.sh` | `eks` → `aws eks update-kubeconfig` (2.º arg = nome do cluster); `k3s` → lê **`KUBE_CONFIG`** (texto do kubeconfig), grava ficheiro; o `source apply-kubeconfig-env.sh` no mesmo `run` exporta **`KUBECONFIG`** = path. |
-| `deploy-workload.sh` | Helm/kubectl por pasta de app; merge dos overrides de topologia como acima. |
+| `ensure-local-path-storageclass.sh` | Se `KUBE_PROVIDER=k3s`, `kubectl apply` da StorageClass `local-path` em `config/k8s/`. |
+| `apply-crdb-operator-crds.sh` | `kubectl apply` do CRD `CrdbCluster` a partir do repositório `cockroachdb-operator` (ref `CRDB_OPERATOR_CRD_REF`, default `master`). |
+| `deploy-workload.sh` | Cria namespace do workload; Helm/kubectl por pasta; em `k3s` salta chart `traefik`; antes de cockroachdb aplica CRDs; merge dos overrides de topologia. |
 | `deploy-cronjobs.sh` | `kubectl apply` em `cron-jobs/`. |
 
 ## 4. Workflows GitHub Actions
 
-- **`k8s-deploy.yml`:** jobs `deploy-development` e `deploy-production`; **credenciais AWS** só quando `KUBE_PROVIDER == eks` (após carregar o mapa).
+- **`k8s-deploy.yml`:** jobs `deploy-development` e `deploy-production`; **StorageClass** (K3s) e workloads na ordem **obs → vault → common → cron**; **credenciais AWS** só quando `KUBE_PROVIDER == eks`.
 - **`deployment-restart.yml`:** restart manual de um Deployment; mesmo critério para AWS.
 
 O workflow chama `configure-kube.sh` com **dois argumentos** apenas quando `KUBE_PROVIDER=eks` (nome do cluster); com **K3s** passa só o provedor — `EKS_CLUSTER_NAME` não é definido pelo `load-cluster-env.sh` quando o mapa é K3s.

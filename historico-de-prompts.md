@@ -127,3 +127,9 @@ Acumular falhas nos deploys e só `exit 1` no final (em vez de fail-fast).
 CockroachDB: disco 10G em development e production, StorageClass `local-path`.
 
 **Resultado:** `values-production.yaml`: `storage` de `20Gi` para `10Gi`; `values-development.yaml` já estava `10Gi` com `local-path`.
+
+### Prompt 22
+
+Executar plano de deploy: StorageClass `local-path`, ordem obs→vault→common→cron, CRD Cockroach antes do helm, saltar Traefik em K3s, namespace idempotente.
+
+**Resultado:** `config/k8s/storageclass-local-path.yaml`; `ensure-local-path-storageclass.sh`, `apply-crdb-operator-crds.sh`; `deploy-workload.sh` atualizado; `k8s-deploy.yml` reordenado + passo StorageClass (K3s); HOWTO e README atualizados.
