@@ -169,3 +169,15 @@ Executar plano RBAC multi-env + K3s control-plane: remover `nodeSelector` legado
 Regenerar timestamps em todos os `deploy.ack` (paths-filter) e commit + push.
 
 **Resultado:** `tools/bump-deploy-ack.ps1` (ISO 8601 UTC); `git commit` + `git push` em `main`.
+
+### Prompt 29
+
+Implementar plano "local-path, sem nodeSelector, scheduling no control-plane (affinity)": StorageClass `local-path`, overrides K3s com nodeAffinity, `fullnameOverride` curto no KPS, Jaeger/Cassandra dev e documentação.
+
+**Resultado:** `gp3-default` / `ebs-gp3-sc` → `local-path` em Loki, Thanos, Grafana, Redis (incl. `values.yaml` base), RedisInsight, Jupyter PVC; `config/helm-overrides/k3s/*.yaml` com nodeAffinity + tolerations (Promtail só tolerations); Tempo com affinity em string (tpl); Job schema Jaeger com suporte a `schema.affinity` no template; Cassandra `cluster_size: 1` em dev; KPS `obs-kps-dev` / `obs-kps-prd`; HOWTO §6, §8 e nova §9; este registo.
+
+### Prompt 30
+
+Corrigir falhas de deploy: timeout nos hooks do `kube-prometheus-stack` e Job imutável `jaeger-cassandra-schema` no `helm upgrade`.
+
+**Resultado:** Job Cassandra schema com hooks Helm (`post-install`/`post-upgrade`, `before-hook-creation`); `deploy-workload.sh`: timeout KPS `35m`; HOWTO §3/§9 atualizados; este registo.

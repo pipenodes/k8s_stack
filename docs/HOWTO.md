@@ -65,7 +65,7 @@ Cada chart tem chaves diferentes (`replicaCount` vs `replica.replicaCount`, etc.
 | `configure-kube.sh` | `eks` → `aws eks update-kubeconfig` (2.º arg = nome do cluster); `k3s` → lê **`KUBE_CONFIG`** (texto do kubeconfig), grava ficheiro; o `source apply-kubeconfig-env.sh` no mesmo `run` exporta **`KUBECONFIG`** = path. |
 | `ensure-local-path-storageclass.sh` | Se `KUBE_PROVIDER=k3s`, `kubectl apply` da StorageClass `local-path` em `config/k8s/`. |
 | `apply-crdb-operator-crds.sh` | `kubectl apply` do CRD `CrdbCluster` a partir do repositório `cockroachdb-operator` (ref `CRDB_OPERATOR_CRD_REF`, default `master`). |
-| `deploy-workload.sh` | Cria namespace do workload; Helm/kubectl por pasta; em `k3s` salta chart `traefik`; antes de cockroachdb aplica CRDs; merge dos overrides de topologia; **`kube-prometheus-stack`** com `--timeout 20m`. Em **`workload-obs`:** `kube-prometheus-stack` primeiro; namespace `<env>-workload-vault` criado se necessário. Com **`KUBE_PROVIDER=k3s`** e workload `workload-obs` / `workload-vault` / `workload-common`, faz merge opcional de [`config/helm-overrides/k3s/<nome-do-chart>.yaml`](../config/helm-overrides/k3s/) (scheduling no nó control-plane / servidor). |
+| `deploy-workload.sh` | Cria namespace do workload; Helm/kubectl por pasta; em `k3s` salta chart `traefik`; antes de cockroachdb aplica CRDs; merge dos overrides de topologia; **`kube-prometheus-stack`** com `--timeout 35m`. Em **`workload-obs`:** `kube-prometheus-stack` primeiro; namespace `<env>-workload-vault` criado se necessário. Com **`KUBE_PROVIDER=k3s`** e workload `workload-obs` / `workload-vault` / `workload-common`, faz merge opcional de [`config/helm-overrides/k3s/<nome-do-chart>.yaml`](../config/helm-overrides/k3s/) (scheduling no nó control-plane / servidor). |
 | `deploy-cronjobs.sh` | `kubectl apply` em `cron-jobs/`. |
 | [`tools/bump-deploy-ack.sh`](../tools/bump-deploy-ack.sh) / [`bump-deploy-ack.ps1`](../tools/bump-deploy-ack.ps1) | Atualizam todos os `deploy.ack` com timestamp **ISO 8601 UTC** (`YYYY-MM-DDTHH:MM:SSZ`) para o paths-filter disparar deploy; ver [README-deploy-ack](../tools/README-deploy-ack.md). |
 
@@ -86,7 +86,7 @@ Ver também [examples.md](examples.md).
 
 ## 6. `kube-prometheus-stack`: nomes cluster-wide e recuperação
 
-Os `ClusterRole` / hooks de admission do chart usam o **`fullnameOverride`** definido em `values-development.yaml` / `values-production.yaml` (ex.: `development-kube-prometheus-stack` vs `production-kube-prometheus-stack`), para **evitar colisão** no mesmo cluster físico entre namespaces `development-workload-obs` e `production-workload-obs` (recursos cluster-scoped partilham o cluster inteiro).
+Os `ClusterRole` / hooks de admission do chart usam o **`fullnameOverride`** curto (`obs-kps-dev` / `obs-kps-prd`) definido em `values-development.yaml` / `values-production.yaml`, para **evitar colisão** no mesmo cluster físico entre namespaces `development-workload-obs` e `production-workload-obs` e para ficar abaixo do truncamento interno do chart (~26 caracteres) nos nomes de `ServiceAccount`/Jobs do webhook.
 
 O **seletor de `ServiceMonitor`** do Prometheus continua a usar o **nome do release Helm** (`kube-prometheus-stack`, igual ao nome da pasta), não o `fullnameOverride` — por isso as labels `release: kube-prometheus-stack` nos charts dependentes (ex.: Grafana) mantêm-se alinhadas.
 
@@ -104,6 +104,12 @@ Charts como **Loki**, **Promtail** e **OpenTelemetry** criam `ClusterRole` com n
 
 A pasta [`config/helm-overrides/k3s/`](../config/helm-overrides/k3s/) contém um YAML **por chart** (nome = pasta do chart, ex.: `loki.yaml`, `kube-prometheus-stack.yaml`). Só entram no `helm upgrade` quando `KUBE_PROVIDER=k3s` e o workload é obs, vault ou common — **não** em EKS e **não** em `cron-jobs`.
 
-Incluem `nodeSelector` para `node-role.kubernetes.io/control-plane` e **tolerations** para os taints `control-plane` / `master`. Confirma os labels do nó com `kubectl get nodes --show-labels` e ajusta se o teu K3s usar outra convenção.
+Incluem **nodeAffinity** `requiredDuringScheduling` com `Exists` em `node-role.kubernetes.io/control-plane` e **tolerations** para os taints `control-plane` / `master` (sem campo `nodeSelector`). Confirma os labels do nó com `kubectl get nodes --show-labels` e ajusta se o teu K3s usar outra convenção.
 
-**DaemonSets** (ex.: Promtail): um pod por nó; com **um único** nó servidor o efeito prático é um pod nesse nó. Com vários nós, o comportamento depende dos taints/labels de cada nó.
+**DaemonSets** (ex.: Promtail): o override K3s aplica só **tolerations** (sem affinity a control-plane) para o agente de logs continuar a poder correr em todos os nós.
+
+## 9. Jaeger (Cassandra): Job de schema e réplicas
+
+- O Job `*-cassandra-schema` é um **hook** Helm (`post-install`/`post-upgrade`) com `helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded`, para o upgrade **apagar e recriar** o Job em vez de tentar patch ao `spec.template` (imutável no Kubernetes).
+- Em releases antigos **antes** desta alteração, se o upgrade ainda falhar no Job, apaga manualmente: `kubectl delete job -n <namespace> <release>-cassandra-schema`.
+- Em **development**, o subchart Cassandra usa **`cluster_size: 1`** (e `seed_size: 1`) em `values-development.yaml` para evitar gossip entre réplicas quando só há um nó ou pouca rede entre pods.

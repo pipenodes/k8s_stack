@@ -20,7 +20,7 @@ global:
   ##   - myRegistryKeySecretName
   ##
   imagePullSecrets: []
-  defaultStorageClass: "ebs-gp3-sc"
+  defaultStorageClass: "local-path"
   storageClass: ""
   ## Security parameters
   ##

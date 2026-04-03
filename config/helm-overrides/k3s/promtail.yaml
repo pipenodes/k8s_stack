@@ -1,5 +1,5 @@
-﻿nodeSelector:
-  node-role.kubernetes.io/control-plane: ""
+# DaemonSet: sem nodeAffinity para manter agente de logs em todos os nós.
+# Tolerations permitem schedular em nós control-plane com taint.
 tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists

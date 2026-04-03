@@ -1,5 +1,10 @@
-﻿x_cp_ns: &cp_ns
-  node-role.kubernetes.io/control-plane: ""
+x_cp_affinity: &cp_affinity
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
 x_cp_tol: &cp_tol
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
@@ -7,9 +12,10 @@ x_cp_tol: &cp_tol
   - key: node-role.kubernetes.io/master
     operator: Exists
     effect: NoSchedule
+
 master:
-  nodeSelector: *cp_ns
+  affinity: *cp_affinity
   tolerations: *cp_tol
 replica:
-  nodeSelector: *cp_ns
+  affinity: *cp_affinity
   tolerations: *cp_tol

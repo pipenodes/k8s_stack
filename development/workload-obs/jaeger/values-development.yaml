@@ -200,6 +200,7 @@ cassandra:
       cpu: 1     
   config:
     cluster_name: jaeger
+    cluster_size: 1
     seed_size: 1
     dc_name: dc1
     rack_name: rack1

@@ -1,5 +1,11 @@
-﻿x_cp_ns: &cp_ns
-  node-role.kubernetes.io/control-plane: ""
+# Affinity em string: o chart aplica `tpl` ao valor (não aceita mapa cru como outros charts).
+x_cp_affinity_str: &cp_affinity_str |
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
 x_cp_tol: &cp_tol
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
@@ -7,24 +13,25 @@ x_cp_tol: &cp_tol
   - key: node-role.kubernetes.io/master
     operator: Exists
     effect: NoSchedule
+
 ingester:
-  nodeSelector: *cp_ns
+  affinity: *cp_affinity_str
   tolerations: *cp_tol
 metricsGenerator:
-  nodeSelector: *cp_ns
+  affinity: *cp_affinity_str
   tolerations: *cp_tol
 distributor:
-  nodeSelector: *cp_ns
+  affinity: *cp_affinity_str
   tolerations: *cp_tol
 compactor:
-  nodeSelector: *cp_ns
+  affinity: *cp_affinity_str
   tolerations: *cp_tol
 querier:
-  nodeSelector: *cp_ns
+  affinity: *cp_affinity_str
   tolerations: *cp_tol
 queryFrontend:
-  nodeSelector: *cp_ns
+  affinity: *cp_affinity_str
   tolerations: *cp_tol
 gateway:
-  nodeSelector: *cp_ns
+  affinity: *cp_affinity_str
   tolerations: *cp_tol

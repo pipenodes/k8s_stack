@@ -414,7 +414,7 @@ extraContainerVolumes: []
 persistence:
   type: pvc
   enabled: false
-  storageClassName: gp3-default
+  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   size: 10Gi

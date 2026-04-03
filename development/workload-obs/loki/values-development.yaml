@@ -147,19 +147,19 @@ backend:
     dataVolumeParameters:
       emptyDir: {}
     size: 5Gi
-    storageClass: gp3-default
+    storageClass: local-path
 read:
   replicas: 2
   persistence:
     enableStatefulSetAutoDeletePVC: true
     size: 5Gi
-    storageClass: gp3-default
+    storageClass: local-path
 write:
   replicas: 2
   persistence:
     enableStatefulSetAutoDeletePVC: true
     size: 5Gi
-    storageClass: gp3-default
+    storageClass: local-path
 
 singleBinary:
   replicas: 0

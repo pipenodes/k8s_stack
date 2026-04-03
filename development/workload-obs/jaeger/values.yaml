@@ -258,6 +258,7 @@ schema:
   securityContext: {}
   podSecurityContext: {}
   nodeSelector: {}
+  affinity: {}
   ## Deadline for cassandra schema creation job
   activeDeadlineSeconds: 300
   extraEnv:

@@ -2508,7 +2508,7 @@ storegateway:
     ## If undefined (the default) or set to null, no storageClassName spec is
     ## set, choosing the default provisioner.
     ##
-    storageClass: "gp3-default"
+    storageClass: "local-path"
     ## @param storegateway.persistence.accessModes PVC Access Modes for data volume
     ##
     accessModes:

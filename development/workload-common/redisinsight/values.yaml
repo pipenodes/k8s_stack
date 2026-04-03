@@ -89,7 +89,7 @@ affinity: {}
 
 volume:
   enabled: true
-  className: "gp3-default"
+  className: "local-path"
   size: 1gi
   annotations:
     helm.sh/resource-policy: "keep"

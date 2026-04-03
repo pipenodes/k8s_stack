@@ -8,8 +8,12 @@ metadata:
   labels:
     {{- include "jaeger.labels" . | nindent 4 }}
     app.kubernetes.io/component: cassandra-schema
-{{- if .Values.schema.annotations }}
   annotations:
+    {{- /* Job.spec.template é imutável: hook + delete antes de recriar evita falha em helm upgrade */}}
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "5"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+{{- if .Values.schema.annotations }}
     {{- toYaml .Values.schema.annotations | nindent 4 }}
 {{- end }}
 spec:
@@ -98,6 +102,10 @@ spec:
       {{- end }}
     {{- with .Values.schema.tolerations }}
       tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.schema.affinity }}
+      affinity:
         {{- toYaml . | nindent 8 }}
     {{- end }}
     {{- with .Values.schema.nodeSelector }}

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # Deploy apps under <repoPath>/<workload>/ com namespace <repoPath>-<workload>
 # Opcional: merge topology-*.yaml; com KUBE_PROVIDER=k3s merge config/helm-overrides/k3s/<chart>.yaml-<standalone|clustered>.yaml (via workload-topology.yaml)
 # Correr todos os charts/manifests; exit 1 no final se algum falhou.
@@ -69,7 +69,8 @@ for application_folder_name in "${chart_iter[@]}"; do
       helm_extra_args+=(--timeout 25m)
     fi
     if [ "$basename_application_folder" = "kube-prometheus-stack" ]; then
-      helm_extra_args+=(--timeout 20m)
+      # Hooks de admission (Jobs patch/cert) em nó único / CPU limitada podem exceder 20m
+      helm_extra_args+=(--timeout 35m)
     fi
     if [ "${KUBE_PROVIDER:-}" = "k3s" ] && case "${WORKLOAD}" in workload-obs|workload-vault|workload-common) true ;; *) false ;; esac; then
       K3S_OVR="${ROOT}/config/helm-overrides/k3s/${basename_application_folder}.yaml"

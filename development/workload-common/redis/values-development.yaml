@@ -20,7 +20,7 @@ global:
   ##   - myRegistryKeySecretName
   ##
   imagePullSecrets: []
-  defaultStorageClass: "gp3-default"
+  defaultStorageClass: "local-path"
   storageClass: ""
   ## Security parameters
   ##

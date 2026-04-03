@@ -133,7 +133,7 @@ backend:
   persistence:
     volumeClaimsEnabled: true
     size: 5Gi
-    storageClass: gp3-default
+    storageClass: local-path
 read:
   replicas: 3
   resources:
@@ -146,13 +146,13 @@ read:
   persistence:
     enableStatefulSetAutoDeletePVC: true
     size: 5Gi
-    storageClass: gp3-default
+    storageClass: local-path
 write:
   replicas: 3
   persistence:
     enableStatefulSetAutoDeletePVC: true
     size: 5Gi
-    storageClass: gp3-default
+    storageClass: local-path
 singleBinary:
   replicas: 0
 test:
