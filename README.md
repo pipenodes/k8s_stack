@@ -59,7 +59,7 @@ O [`deploy-workload.sh`](.github/scripts/deploy-workload.sh) faz merge de `confi
 
 ## Clusters e namespaces
 
-- **K3s:** na UI do GitHub o secret chama-se **`KUBECONFIG`** (conteúdo YAML do kubeconfig, multilinha). No workflow o valor é passado à env **`KUBE_CONFIG`** — **não** à env `KUBECONFIG`, porque esta última é reservada ao **caminho do ficheiro** (kubectl/helm). O passo **Credenciais AWS** só corre se `KUBE_PROVIDER == eks` (após carregar o mapa).
+- **K3s:** na UI do GitHub o secret chama-se **`KUBECONFIG`** (conteúdo YAML do kubeconfig, multilinha). No workflow o valor é passado à env **`KUBE_CONFIG`** — **não** à env `KUBECONFIG`, porque esta última é reservada ao **caminho do ficheiro** (kubectl/helm). Com **`KUBE_PROVIDER == k3s`**, o workflow corre **`tailscale/github-action`** com o secret **`TS_AUTHKEY`** antes do kubectl, para o runner alcançar o apiserver na tailnet (o `server:` do kubeconfig deve apontar para esse acesso). Se o CI falhar com **`lookup …ts.net on 127.0.0.53: no such host`**, o runner não está a usar o DNS do Tailscale (MagicDNS) para esse nome: no secret **`KUBECONFIG`** usa **`server: https://<IP-Tailscale>:6443`** (ex. `100.x.x.x`) e no mesmo bloco **`tls-server-name: lab.ocicat-lake.ts.net`** (ou o SAN do certificado do apiserver), para o TLS continuar válido; ou garante **MagicDNS** ativo na tailnet e **Accept DNS** no nó CI (menos fiável no runner Ubuntu). O passo **Credenciais AWS** só corre se `KUBE_PROVIDER == eks` (após carregar o mapa).
 
 ## GitHub Actions
 
@@ -76,7 +76,7 @@ Scripts: [`configure-kube.sh`](.github/scripts/configure-kube.sh), [`apply-kubec
 
 Por **Environment** (ver [`github-environments.yaml`](config/github-environments.yaml)):
 
-- **K3s:** secret **`KUBECONFIG`** (valor YAML; no job vira `KUBE_CONFIG` — ver acima).
+- **K3s:** secrets **`KUBECONFIG`** (YAML → `KUBE_CONFIG`) e **`TS_AUTHKEY`** (chave pré-autenticada Tailscale para o passo `tailscale/github-action`).
 - **EKS (se mudarem o mapa para `provider: eks`):** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`.
 
 ### Ferramenta local de prefixos

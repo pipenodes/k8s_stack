@@ -66,6 +66,12 @@ jobs:
         if: steps.filter.outputs.dev_common == 'true' || steps.filter.outputs.dev_vault == 'true' || steps.filter.outputs.dev_obs == 'true' || steps.filter.outputs.dev_cron == 'true'
         run: bash .github/scripts/load-cluster-env.sh development
 
+      - name: Tailscale (acesso ao cluster K3s)
+        if: (steps.filter.outputs.dev_common == 'true' || steps.filter.outputs.dev_vault == 'true' || steps.filter.outputs.dev_obs == 'true' || steps.filter.outputs.dev_cron == 'true') && env.KUBE_PROVIDER == 'k3s'
+        uses: tailscale/github-action@v4
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
+
       - name: Credenciais AWS
         if: (steps.filter.outputs.dev_common == 'true' || steps.filter.outputs.dev_vault == 'true' || steps.filter.outputs.dev_obs == 'true' || steps.filter.outputs.dev_cron == 'true') && env.KUBE_PROVIDER == 'eks'
         uses: aws-actions/configure-aws-credentials@v4
@@ -163,6 +169,12 @@ jobs:
       - name: Carregar mapa de cluster e topologia
         if: steps.filter.outputs.prod_common == 'true' || steps.filter.outputs.prod_vault == 'true' || steps.filter.outputs.prod_obs == 'true' || steps.filter.outputs.prod_cron == 'true'
         run: bash .github/scripts/load-cluster-env.sh production
+
+      - name: Tailscale (acesso ao cluster K3s)
+        if: (steps.filter.outputs.prod_common == 'true' || steps.filter.outputs.prod_vault == 'true' || steps.filter.outputs.prod_obs == 'true' || steps.filter.outputs.prod_cron == 'true') && env.KUBE_PROVIDER == 'k3s'
+        uses: tailscale/github-action@v4
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
 
       - name: Credenciais AWS
         if: (steps.filter.outputs.prod_common == 'true' || steps.filter.outputs.prod_vault == 'true' || steps.filter.outputs.prod_obs == 'true' || steps.filter.outputs.prod_cron == 'true') && env.KUBE_PROVIDER == 'eks'

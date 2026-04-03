@@ -1,5 +1,5 @@
 # Contrato GitHub: Environments e secrets esperados por provedor (nomes — valores na UI do GitHub).
-# K3s: secret nome KUBECONFIG (YAML do kubeconfig). No CI mapeia-se para env KUBE_CONFIG; a env KUBECONFIG fica só o path do ficheiro.
+# K3s: KUBECONFIG (YAML) → env KUBE_CONFIG no workflow; TS_AUTHKEY (Tailscale) liga o runner à tailnet antes do kubectl quando o acesso ao API é privado.
 version: 1
 
 environments:
@@ -13,6 +13,7 @@ environments:
         - AWS_DEFAULT_REGION
       k3s:
         - KUBECONFIG
+        - TS_AUTHKEY
       aks:
         - AZURE_CLIENT_ID
         - AZURE_CLIENT_SECRET
@@ -40,6 +41,7 @@ environments:
         - AWS_DEFAULT_REGION
       k3s:
         - KUBECONFIG
+        - TS_AUTHKEY
       aks:
         - AZURE_CLIENT_ID
         - AZURE_CLIENT_SECRET
@@ -67,6 +69,7 @@ environments:
         - AWS_DEFAULT_REGION
       k3s:
         - KUBECONFIG
+        - TS_AUTHKEY
       aks:
         - AZURE_CLIENT_ID
         - AZURE_CLIENT_SECRET

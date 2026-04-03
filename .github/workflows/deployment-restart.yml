@@ -41,6 +41,12 @@ jobs:
       - name: Carregar mapa de cluster e topologia
         run: bash .github/scripts/load-cluster-env.sh "${{ inputs.environment }}"
 
+      - name: Tailscale (acesso ao cluster K3s)
+        if: env.KUBE_PROVIDER == 'k3s'
+        uses: tailscale/github-action@v4
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
+
       - name: Credenciais AWS
         if: env.KUBE_PROVIDER == 'eks'
         uses: aws-actions/configure-aws-credentials@v4

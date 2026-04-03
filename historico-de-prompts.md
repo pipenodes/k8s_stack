@@ -97,3 +97,27 @@ CockroachDB `values-*`: StorageClass `local-path` em dev e prod.
 Renomear pastas `cockroachdb-parent` → `cockroachdb` em development e production `workload-common`.
 
 **Resultado:** `git mv` para `workload-common/cockroachdb/`; `deploy-workload.sh` timeout alinhado ao nome `cockroachdb`; README, HOWTO e comentários nos `values-*` atualizados.
+
+### Prompt 17
+
+Adicionar `TS_AUTHKEY` no GitHub e implementar Tailscale nos GitHub Actions.
+
+**Resultado:** Passo `tailscale/github-action@v4` com `authkey: secrets.TS_AUTHKEY` após `load-cluster-env.sh` em `k8s-deploy.yml` (development e production) quando `KUBE_PROVIDER == k3s`; mesmo padrão em `deployment-restart.yml`. Atualizados `config/github-environments.yaml` e README.
+
+### Prompt 18
+
+Erro no CI: `lookup lab.ocicat-lake.ts.net on 127.0.0.53: no such host` apesar de telnet funcionar de outro nó na tailnet.
+
+**Resultado:** README: nota sobre falha de MagicDNS no runner GitHub Actions; workaround `server` com IP Tailscale + `tls-server-name` para validação TLS.
+
+### Prompt 19
+
+Pipeline a marcar sucesso quando Helm/kubectl falhavam (avisos "Warning: failed to deploy").
+
+**Resultado:** `deploy-workload.sh` e `deploy-cronjobs.sh` com `set -euo pipefail` e remoção de `|| echo` que mascarava códigos de saída; qualquer falha de `helm`/`kubectl` falha o job.
+
+### Prompt 20
+
+Acumular falhas nos deploys e só `exit 1` no final (em vez de fail-fast).
+
+**Resultado:** `deploy-workload.sh` e `deploy-cronjobs.sh` contam falhas com `if ! helm`/`if ! kubectl`, listam itens falhados no stderr e terminam com código 1 se `failures > 0`; `cd`/`yq` mantêm `set -e`.
