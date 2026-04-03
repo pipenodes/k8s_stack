@@ -73,3 +73,9 @@ Histórico novo: um único commit com estado atual limpo + `git push --force-wit
 Plano: `KUBECONFIG` em texto claro (sem base64 no CI); workflows chamam `configure-kube` com 2 args só para EKS; documentação alinhada.
 
 **Resultado:** `configure-kube.sh` grava YAML direto; README, HOWTO, examples, `github-environments.yaml`; `k8s-deploy.yml` e `deployment-restart.yml` com `if [ KUBE_PROVIDER = eks ]`.
+
+### Prompt 13
+
+Incluir no `workload-common` CockroachDB com Helm + Operator (Cockroach Labs).
+
+**Resultado:** Vendored `cockroachdb-parent` de [cockroachdb/helm-charts](https://github.com/cockroachdb/helm-charts) em `development/workload-common` e `production/workload-common`; `values-development.yaml` e `values-production.yaml` com região `on-prem`, namespaces e storage; README e HOWTO atualizados; `deploy-workload.sh` com `--timeout 25m` para este chart.

@@ -1,0 +1,112 @@
+{{ template "cockroachdb.tlsValidation" . }}
+{{ template "cockroachdb.log.validation" . }}
+{{- if .Release.IsUpgrade -}}
+{{ template "cockroachdb.isUpgradeAllowed" . }}
+{{- end -}}
+apiVersion: crdb.cockroachlabs.com/v1beta1
+kind: CrdbCluster
+metadata:
+  name: {{ template "cockroachdb.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+    {{- with .Values.cockroachdb.crdbCluster.podTemplate.metadata.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.k8s.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  tlsEnabled: {{ .Values.cockroachdb.tls.enabled }}
+  {{- with .Values.cockroachdb.crdbCluster.clusterSettings }}
+  clusterSettings: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.cockroachdb.crdbCluster.regions }}
+  regions: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rollingRestartDelay: {{ .Values.cockroachdb.crdbCluster.rollingRestartDelay }}
+  template:
+    spec:
+      image: "{{ .Values.cockroachdb.crdbCluster.image.name }}"
+      {{- if .Values.cockroachdb.tls.enabled }}
+      certificates:
+        {{- if .Values.cockroachdb.tls.externalCertificates.enabled }}
+        externalCertificates: {{- toYaml .Values.cockroachdb.tls.externalCertificates.certificates | nindent 10 }}
+        {{- end }}
+        {{- if .Values.cockroachdb.tls.selfSigner.enabled }}
+        externalCertificates:
+          {{- /* Note: these defaults must match the secrets and configmaps created by the self-signer job. */}}
+          caConfigMapName: {{ default (printf "%s-ca-secret-crt" (include "cockroachdb.fullname" .)) }}
+          httpSecretName: {{ default (printf "%s-client-secret" (include "cockroachdb.fullname" .)) }}
+          nodeSecretName: {{ default (printf "%s-node-secret" (include "cockroachdb.fullname" .)) }}
+          rootSqlClientSecretName: {{ default (printf "%s-client-secret" (include "cockroachdb.fullname" .)) }}
+        {{- end }}
+        {{- if .Values.cockroachdb.tls.certManager.enabled }}
+        externalCertificates:
+          caConfigMapName: {{ .Values.cockroachdb.tls.certManager.caConfigMap }}
+          nodeSecretName: {{ .Values.cockroachdb.tls.certManager.nodeSecret }}
+          httpSecretName: {{ .Values.cockroachdb.tls.certManager.clientRootSecret }}
+          rootSqlClientSecretName: {{ .Values.cockroachdb.tls.certManager.clientRootSecret }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.dataStore }}
+      dataStore: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.walFailoverSpec }}
+      walFailoverSpec: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.localityLabels }}
+      localityLabels: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.localityMappings }}
+      localityMappings: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.cockroachdb.crdbCluster.log.config .Values.cockroachdb.crdbCluster.loggingConfigMapName }}
+      loggingConfigMapName: {{ if .Values.cockroachdb.crdbCluster.loggingConfigMapName }}{{ .Values.cockroachdb.crdbCluster.loggingConfigMapName }}{{ else }}{{ template "cockroachdb.fullname" . }}-log-config{{ end }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.loggingConfigVars }}
+      loggingConfigVars: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.log.logsStore }}
+      logsStore: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.sideCars }}
+      sideCars: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.cockroachdb.crdbCluster.service.ports.grpc.port }}
+      grpcPort: {{ .Values.cockroachdb.crdbCluster.service.ports.grpc.port }}
+      {{- end }}
+      {{- if .Values.cockroachdb.crdbCluster.service.ports.sql.port }}
+      sqlPort: {{ .Values.cockroachdb.crdbCluster.service.ports.sql.port }}
+      {{- end }}
+      {{- if .Values.cockroachdb.crdbCluster.service.ports.http.port }}
+      httpPort: {{ .Values.cockroachdb.crdbCluster.service.ports.http.port }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.startFlags }}
+      startFlags: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.podTemplate }}
+      podTemplate:
+        metadata:
+          labels:
+            app.kubernetes.io/name: {{ template "cockroachdb.name" $ }}
+            app.kubernetes.io/instance: {{ $.Release.Name | quote }}
+            {{- with .metadata.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            helm.sh/restartedAt: {{ $.Values.cockroachdb.crdbCluster.timestamp | quote }}
+            {{- with .metadata.annotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:        
+            {{- $spec := deepCopy .spec }}
+            {{- $_ := set $spec "serviceAccountName" (include "cockroachdb.serviceAccount.name" $) }}
+            {{- toYaml $spec | nindent 12 }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.persistentVolumeClaimRetentionPolicy }}
+      persistentVolumeClaimRetentionPolicy: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cockroachdb.crdbCluster.virtualCluster }}
+      virtualCluster: {{- toYaml . | nindent 8 }}
+      {{- end }}

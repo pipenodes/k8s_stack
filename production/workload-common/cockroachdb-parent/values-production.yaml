@@ -1,0 +1,25 @@
+# Overrides para production — CockroachDB via Operator (chart oficial cockroachdb-parent).
+# Namespace de deploy: production-workload-common.
+# Ajusta `regions[].code` e `operator.cloudRegion` aos labels de região dos nós, se aplicável.
+
+operator:
+  numReplicas: 2
+  cloudRegion: "on-prem"
+
+cockroachdb:
+  cockroachdb:
+    crdbCluster:
+      regions:
+        - code: on-prem
+          nodes: 3
+          cloudProvider: ""
+          namespace: production-workload-common
+      dataStore:
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 20Gi
+            volumeMode: Filesystem

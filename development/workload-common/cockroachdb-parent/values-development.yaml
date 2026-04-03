@@ -1,0 +1,25 @@
+# Overrides para development — CockroachDB via Operator (chart oficial cockroachdb-parent).
+# Namespace de deploy: development-workload-common (helm -n define o Release.Namespace).
+# Ajusta `regions[].code` e `operator.cloudRegion` ao teu `topology.kubernetes.io/region` se usares labels nos nós.
+
+operator:
+  numReplicas: 1
+  cloudRegion: "on-prem"
+
+cockroachdb:
+  cockroachdb:
+    crdbCluster:
+      regions:
+        - code: on-prem
+          nodes: 1
+          cloudProvider: ""
+          namespace: development-workload-common
+      dataStore:
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 10Gi
+            volumeMode: Filesystem

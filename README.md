@@ -89,7 +89,7 @@ Dentro de `development/`, `staging/` (opcional), `production/`:
 
 | Pasta | Namespace de deploy | Conteúdo típico |
 |-------|---------------------|-----------------|
-| `workload-common/` | `<env>-workload-common` | Vault, Traefik, Redis, JupyterLab, … |
+| `workload-common/` | `<env>-workload-common` | Vault, Traefik, Redis, CockroachDB ([chart `cockroachdb-parent`](https://github.com/cockroachdb/helm-charts/tree/master/cockroachdb-parent)), JupyterLab, … |
 | `workload-vault/` | `<env>-workload-vault` | Vault Secrets Operator |
 | `workload-obs/` | `<env>-workload-obs` | Observabilidade |
 | `cron-jobs/` | manifests (ex.: `kube-system`) | CronJobs cluster-wide |

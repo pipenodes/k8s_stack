@@ -1,0 +1,41 @@
+# Generated file, DO NOT EDIT. Source: build/templates/cockroachdb-parent/charts/operator/values.yaml
+# Default values for the operator chart.
+
+# image captures the container image settings for Operator pods.
+image:
+  # registry is the container registry where the image is stored.
+  registry: "us-docker.pkg.dev/releases-prod/self-hosted"
+  # repository defines the image repository.
+  repository: "cockroachdb-operator@sha256"
+  # pullPolicy specifies the image pull policy.
+  pullPolicy: IfNotPresent
+  # tag is the image tag.
+  tag: "62796d0ad9c87cb0f1f85ebcbc905235ca6c1fc3549bf2a62f5c534af0497332"
+# certificate defines the certificate settings for the Operator.
+certificate:
+  # validForDays specifies the number of days the certificate is valid for.
+  validForDays: ""
+# numReplicas specifies the number of replicas for the Operator.
+numReplicas: 3
+# cloudRegion specifies the cloud region for the Operator.
+cloudRegion: "us-east1"
+# Namespaces the operator should watch. Leave empty to watch all namespaces (default).
+# Accepts a single namespace or a comma-separated list, e.g. "prod-a,prod-b".
+#
+# The operator's own namespace and the namespaces it watches are independent.
+# You can install the operator into "ops" while scoping it to watch "prod-a,prod-b".
+#
+# Do not configure multiple operators to watch overlapping namespaces. Both will reconcile
+# the same clusters independently, which can cause unpredictable behavior.
+watchNamespaces: ""
+# The "app" label applied to the operator Deployment, its pods, the gRPC/metrics Service
+# selector, and the operator's ServiceAccount and ClusterRoleBinding labels. Defaults to
+# "cockroach-operator" to preserve backward compatibility.
+#
+# Important: changing this on an existing installation requires helm upgrade --force since
+# the Deployment selector is immutable. The operator will be briefly unavailable during the update.
+appLabel: "cockroach-operator"
+# selfSignedOperatorCerts: when true, the operator self-generates certs into an emptyDir on
+# startup; certs rotate on every pod restart. When false (default), Helm provisions a stable
+# cockroach-operator-certs Secret. Switching requires deleting that Secret first.
+selfSignedOperatorCerts: false
