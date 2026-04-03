@@ -157,3 +157,9 @@ Timestamp nos `deploy.ack`: preferir formato melhor que Julian.
 Implementar plano "correção deploy workload-obs (EKS)": ordem KPS primeiro, `fullnameOverride` por ambiente, namespace vault na fase obs, documentação.
 
 **Resultado:** `deploy-workload.sh`: `workload-obs` instala `kube-prometheus-stack` antes do resto (restante em ordem `LC_ALL=C`); cria `<env>-workload-vault` idempotente; `kube-prometheus-stack/values-development.yaml` e `values-production.yaml` com `fullnameOverride` distinto; HOWTO §6 e bullets em §1/§3; este registo.
+
+### Prompt 27
+
+Executar plano RBAC multi-env + K3s control-plane: remover `nodeSelector` legados (EKS `ng:*`), overrides `config/helm-overrides/k3s/*.yaml`, merge condicional em `deploy-workload.sh`, nomes únicos Loki/Promtail/OTel, URLs gateway Loki, timeout KPS, documentação.
+
+**Resultado:** Removidos `ng: obs-default-*` / `common-default-*` e tolerations `workload-type` dos `values-*.yaml` afetados; `config/helm-overrides/k3s/` por chart; `deploy-workload.sh` com `-f` K3s e `--timeout 20m` para `kube-prometheus-stack`; `fullnameOverride` Loki/Promtail; `clusterRole` OTel; URLs `*-loki-gateway` em OTel, Promtail e Traefik; HOWTO §7–§8; tabela §3; este registo.

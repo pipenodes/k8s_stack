@@ -198,14 +198,7 @@ ingester:
   # -- Override Pod Disruption Budget maxUnavailable with a static value
   # maxUnavailable: 1
   # -- Node selector for ingester pods
-  nodeSelector:
-    ng: obs-default-development-101
   # -- Tolerations for ingester pods
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"
   # -- Extra volumes for ingester pods
   extraVolumeMounts: []
   # -- Extra volumes for ingester deployment
@@ -391,14 +384,7 @@ metricsGenerator:
   # -- Minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing/terminating
   minReadySeconds: 10
   # -- Node selector for metrics-generator pods
-  nodeSelector:
-    ng: obs-default-development-101
   # -- Tolerations for metrics-generator pods
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"
   # -- Persistence configuration for metrics-generator
   persistence:
     # -- Enable creating PVCs if you have kind set to StatefulSet. This disables using local disk or memory configured in walEmptyDir
@@ -586,14 +572,7 @@ distributor:
   # -- Minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing/terminating
   minReadySeconds: 10
   # -- Node selector for distributor pods
-  nodeSelector:
-    ng: obs-default-development-101
   # -- Tolerations for distributor pods
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"
   # -- Init containers for the distributor pod
   initContainers: []
   # -- Extra volumes for distributor pods
@@ -715,14 +694,7 @@ compactor:
   # -- Minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing/terminating
   minReadySeconds: 10
   # -- Node selector for compactor pods
-  nodeSelector:
-    ng: obs-default-development-101
   # -- Tolerations for compactor pods
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"
   # -- Extra volumes for compactor pods
   extraVolumeMounts: []
   # -- Extra volumes for compactor deployment
@@ -841,14 +813,7 @@ querier:
     # -- Maximum number of Pods that can be unavailable during the update process
     maxUnavailable: 1
   # -- Node selector for querier pods
-  nodeSelector:
-    ng: obs-default-development-101
   # -- Tolerations for querier pods
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"
   # -- Init containers for the querier pod
   initContainers: []
   # -- Extra volumes for querier pods
@@ -1053,14 +1018,7 @@ queryFrontend:
   # -- Minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing/terminating
   minReadySeconds: 10
   # -- Node selector for query-frontend pods
-  nodeSelector:
-    ng: obs-default-development-101
   # -- Tolerations for query-frontend pods
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"
   # -- Init containers for the query-frontend pod
   initContainers: []
   # -- Extra volumes for query-frontend pods
@@ -2004,14 +1962,7 @@ gateway:
   # -- Minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing/terminating
   minReadySeconds: 10
   # -- Node selector for gateway pods
-  nodeSelector:
-    ng: obs-default-development-101  
   # -- Tolerations for gateway pods
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"
   # Gateway service configuration
   service:
     # -- Port of the gateway service

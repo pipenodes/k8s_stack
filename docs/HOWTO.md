@@ -65,7 +65,7 @@ Cada chart tem chaves diferentes (`replicaCount` vs `replica.replicaCount`, etc.
 | `configure-kube.sh` | `eks` → `aws eks update-kubeconfig` (2.º arg = nome do cluster); `k3s` → lê **`KUBE_CONFIG`** (texto do kubeconfig), grava ficheiro; o `source apply-kubeconfig-env.sh` no mesmo `run` exporta **`KUBECONFIG`** = path. |
 | `ensure-local-path-storageclass.sh` | Se `KUBE_PROVIDER=k3s`, `kubectl apply` da StorageClass `local-path` em `config/k8s/`. |
 | `apply-crdb-operator-crds.sh` | `kubectl apply` do CRD `CrdbCluster` a partir do repositório `cockroachdb-operator` (ref `CRDB_OPERATOR_CRD_REF`, default `master`). |
-| `deploy-workload.sh` | Cria namespace do workload; Helm/kubectl por pasta; em `k3s` salta chart `traefik`; antes de cockroachdb aplica CRDs; merge dos overrides de topologia. Em **`workload-obs`:** `kube-prometheus-stack` primeiro; namespace `<env>-workload-vault` criado se necessário. |
+| `deploy-workload.sh` | Cria namespace do workload; Helm/kubectl por pasta; em `k3s` salta chart `traefik`; antes de cockroachdb aplica CRDs; merge dos overrides de topologia; **`kube-prometheus-stack`** com `--timeout 20m`. Em **`workload-obs`:** `kube-prometheus-stack` primeiro; namespace `<env>-workload-vault` criado se necessário. Com **`KUBE_PROVIDER=k3s`** e workload `workload-obs` / `workload-vault` / `workload-common`, faz merge opcional de [`config/helm-overrides/k3s/<nome-do-chart>.yaml`](../config/helm-overrides/k3s/) (scheduling no nó control-plane / servidor). |
 | `deploy-cronjobs.sh` | `kubectl apply` em `cron-jobs/`. |
 | [`tools/bump-deploy-ack.sh`](../tools/bump-deploy-ack.sh) / [`bump-deploy-ack.ps1`](../tools/bump-deploy-ack.ps1) | Atualizam todos os `deploy.ack` com timestamp **ISO 8601 UTC** (`YYYY-MM-DDTHH:MM:SSZ`) para o paths-filter disparar deploy; ver [README-deploy-ack](../tools/README-deploy-ack.md). |
 
@@ -91,3 +91,19 @@ Os `ClusterRole` / hooks de admission do chart usam o **`fullnameOverride`** def
 O **seletor de `ServiceMonitor`** do Prometheus continua a usar o **nome do release Helm** (`kube-prometheus-stack`, igual ao nome da pasta), não o `fullnameOverride` — por isso as labels `release: kube-prometheus-stack` nos charts dependentes (ex.: Grafana) mantêm-se alinhadas.
 
 Se um deploy falhar a meio e ficarem objetos órfãos do hook de admission, rever com `kubectl get clusterrole,clusterrolebinding | rg admission` (ou equivalente) e remover os associados ao release antigo, ou `helm uninstall <release> -n <namespace>` conforme o estado, antes de voltar a correr o CI.
+
+## 7. RBAC cluster-scoped (dev + prod no mesmo cluster)
+
+Charts como **Loki**, **Promtail** e **OpenTelemetry** criam `ClusterRole` com nomes derivados do release. No **mesmo cluster** com `development-workload-obs` e `production-workload-obs`, os valores usam:
+
+- **Loki:** `fullnameOverride` na raiz (`development-loki` / `production-loki`) — o serviço do gateway passa a `<fullname>-gateway` (ex.: `development-loki-gateway`). Atualizar referências em OTel, Promtail e Traefik (`IngressRoute`).
+- **Promtail:** `fullnameOverride` por ambiente (`development-promtail` / `production-promtail`).
+- **OpenTelemetry:** `clusterRole.name` e `clusterRole.clusterRoleBinding.name` por ambiente; o **Service** mantém o nome `opentelemetry-collector` (DNS em Loki inalterado).
+
+## 8. K3s: scheduling no servidor (control-plane)
+
+A pasta [`config/helm-overrides/k3s/`](../config/helm-overrides/k3s/) contém um YAML **por chart** (nome = pasta do chart, ex.: `loki.yaml`, `kube-prometheus-stack.yaml`). Só entram no `helm upgrade` quando `KUBE_PROVIDER=k3s` e o workload é obs, vault ou common — **não** em EKS e **não** em `cron-jobs`.
+
+Incluem `nodeSelector` para `node-role.kubernetes.io/control-plane` e **tolerations** para os taints `control-plane` / `master`. Confirma os labels do nó com `kubectl get nodes --show-labels` e ajusta se o teu K3s usar outra convenção.
+
+**DaemonSets** (ex.: Promtail): um pod por nó; com **um único** nó servidor o efeito prático é um pod nesse nó. Com vários nós, o comportamento depende dos taints/labels de cada nó.

@@ -137,7 +137,7 @@ config:
         insecure: true
         insecure_skip_verify: true
     loki:
-      endpoint: http://loki-gateway.development-workload-obs.svc.cluster.local:80/loki/api/v1/push
+      endpoint: http://development-loki-gateway.development-workload-obs.svc.cluster.local:80/loki/api/v1/push
     debug: {}
   extensions:
     # The health_check extension is mandatory for this chart.
@@ -270,7 +270,7 @@ clusterRole:
   # The name of the clusterRole to use.
   # If not set a name is generated using the fullname template
   # Can be used in combination with presets that create a cluster role.
-  name: ""
+  name: development-opentelemetry-collector
   # A set of rules as documented here : https://kubernetes.io/docs/reference/access-authn-authz/rbac/
   # Can be used in combination with presets that create a cluster role to add additional rules.
   rules: []
@@ -291,18 +291,11 @@ clusterRole:
     # The name of the clusterRoleBinding to use.
     # If not set a name is generated using the fullname template
     # Can be used in combination with presets that create a cluster role binding.
-    name: ""
+    name: development-opentelemetry-collector
 
 podSecurityContext: {}
 securityContext: {}
 
-nodeSelector:
-  ng: obs-default-development-101 
-tolerations:
-  - key: "workload-type"
-    operator: "Equal"
-    value: "obs"
-    effect: "NoSchedule"
 affinity: {}
 topologySpreadConstraints: []
 

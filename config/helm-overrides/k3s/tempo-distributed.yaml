@@ -1,0 +1,30 @@
+﻿x_cp_ns: &cp_ns
+  node-role.kubernetes.io/control-plane: ""
+x_cp_tol: &cp_tol
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+ingester:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol
+metricsGenerator:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol
+distributor:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol
+compactor:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol
+querier:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol
+queryFrontend:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol
+gateway:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol

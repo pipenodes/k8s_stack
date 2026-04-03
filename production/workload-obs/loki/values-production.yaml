@@ -1,4 +1,5 @@
 ---
+fullnameOverride: production-loki
 loki:
   auth_enabled: false
   image:
@@ -82,9 +83,6 @@ deploymentMode: SimpleScalable
 
 gateway:
   replicas: 2
-  nodeSelector:
-    ng: obs-default-production-101
-
 ingester:
   replicas: 0
 querier:
@@ -136,8 +134,6 @@ backend:
     volumeClaimsEnabled: true
     size: 5Gi
     storageClass: gp3-default
-  nodeSelector:
-    ng: obs-default-production-101    
 read:
   replicas: 3
   resources:
@@ -151,17 +147,12 @@ read:
     enableStatefulSetAutoDeletePVC: true
     size: 5Gi
     storageClass: gp3-default
-  nodeSelector:
-    ng: obs-default-production-101  
 write:
   replicas: 3
   persistence:
     enableStatefulSetAutoDeletePVC: true
     size: 5Gi
     storageClass: gp3-default
-  nodeSelector:
-    ng: obs-default-production-101  
-
 singleBinary:
   replicas: 0
 test:

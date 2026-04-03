@@ -198,8 +198,6 @@ ingester:
   # -- Override Pod Disruption Budget maxUnavailable with a static value
   # maxUnavailable: 1
   # -- Node selector for ingester pods
-  nodeSelector:
-    ng: obs-default-production-101
   # -- Tolerations for ingester pods
   tolerations: []
   # -- Extra volumes for ingester pods
@@ -387,8 +385,6 @@ metricsGenerator:
   # -- Minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing/terminating
   minReadySeconds: 10
   # -- Node selector for metrics-generator pods
-  nodeSelector:
-    ng: obs-default-production-101
   # -- Tolerations for metrics-generator pods
   tolerations: []
   # -- Persistence configuration for metrics-generator
@@ -578,8 +574,6 @@ distributor:
   # -- Minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing/terminating
   minReadySeconds: 10
   # -- Node selector for distributor pods
-  nodeSelector:
-    ng: obs-default-production-101
   # -- Tolerations for distributor pods
   tolerations: []
   # -- Init containers for the distributor pod
@@ -703,8 +697,6 @@ compactor:
   # -- Minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing/terminating
   minReadySeconds: 10
   # -- Node selector for compactor pods
-  nodeSelector:
-    ng: obs-default-production-101
   # -- Tolerations for compactor pods
   tolerations: []
   # -- Extra volumes for compactor pods
@@ -825,8 +817,6 @@ querier:
     # -- Maximum number of Pods that can be unavailable during the update process
     maxUnavailable: 1
   # -- Node selector for querier pods
-  nodeSelector:
-    ng: obs-default-production-101
   # -- Tolerations for querier pods
   tolerations: []
   # -- Init containers for the querier pod
@@ -1033,8 +1023,6 @@ queryFrontend:
   # -- Minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing/terminating
   minReadySeconds: 10
   # -- Node selector for query-frontend pods
-  nodeSelector:
-    ng: obs-default-production-101
   # -- Tolerations for query-frontend pods
   tolerations: []
   # -- Init containers for the query-frontend pod
@@ -1980,8 +1968,6 @@ gateway:
   # -- Minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing/terminating
   minReadySeconds: 10
   # -- Node selector for gateway pods
-  nodeSelector:
-    ng: obs-default-production-101  
   # -- Tolerations for gateway pods
   tolerations: []
   # Gateway service configuration

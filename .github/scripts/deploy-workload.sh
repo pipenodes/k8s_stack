@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # Deploy apps under <repoPath>/<workload>/ com namespace <repoPath>-<workload>
-# Opcional: merge config/helm-overrides/topology-<standalone|clustered>.yaml (via workload-topology.yaml)
+# Opcional: merge topology-*.yaml; com KUBE_PROVIDER=k3s merge config/helm-overrides/k3s/<chart>.yaml-<standalone|clustered>.yaml (via workload-topology.yaml)
 # Correr todos os charts/manifests; exit 1 no final se algum falhou.
 # Uso: deploy-workload.sh <development|staging|production> <workload-common|workload-vault|workload-obs> <values-*.yaml>
 set -euo pipefail
@@ -63,9 +63,19 @@ for application_folder_name in "${chart_iter[@]}"; do
     fi
     echo "Deploying Helm chart: $basename_application_folder into namespace ${NAMESPACE}"
     helm_extra_args=()
+    helm_k3s_args=()
     if [ "$basename_application_folder" = "cockroachdb" ]; then
       bash "${ROOT}/.github/scripts/apply-crdb-operator-crds.sh"
       helm_extra_args+=(--timeout 25m)
+    fi
+    if [ "$basename_application_folder" = "kube-prometheus-stack" ]; then
+      helm_extra_args+=(--timeout 20m)
+    fi
+    if [ "${KUBE_PROVIDER:-}" = "k3s" ] && case "${WORKLOAD}" in workload-obs|workload-vault|workload-common) true ;; *) false ;; esac; then
+      K3S_OVR="${ROOT}/config/helm-overrides/k3s/${basename_application_folder}.yaml"
+      if [ -f "${K3S_OVR}" ]; then
+        helm_k3s_args=(-f "${K3S_OVR}")
+      fi
     fi
     # shellcheck disable=SC2086
     if ! helm upgrade --install "$basename_application_folder" "./$application_folder_name" \
@@ -73,6 +83,7 @@ for application_folder_name in "${chart_iter[@]}"; do
       --create-namespace \
       -f "$basename_application_folder/${VALUES_FILE}" \
       "${helm_topology_args[@]}" \
+      "${helm_k3s_args[@]}" \
       "${helm_extra_args[@]}"; then
       failures=$((failures + 1))
       failed_items+=("helm:${basename_application_folder}")

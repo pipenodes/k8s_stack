@@ -1,0 +1,32 @@
+﻿x_cp_ns: &cp_ns
+  node-role.kubernetes.io/control-plane: ""
+x_cp_tol: &cp_tol
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+
+alertmanager:
+  alertmanagerSpec:
+    nodeSelector: *cp_ns
+    tolerations: *cp_tol
+prometheusOperator:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol
+  admissionWebhooks:
+    patch:
+      nodeSelector: *cp_ns
+      tolerations: *cp_tol
+prometheus:
+  prometheusSpec:
+    nodeSelector: *cp_ns
+    tolerations: *cp_tol
+thanosRuler:
+  thanosRulerSpec:
+    nodeSelector: *cp_ns
+    tolerations: *cp_tol
+grafana:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol

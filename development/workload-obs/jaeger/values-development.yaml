@@ -243,11 +243,6 @@ kafka:
 # use by Jaeger
 schema:
   annotations: {}
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"    
   image:
     registry: ""
     repository: jaegertracing/jaeger-cassandra-schema
@@ -272,8 +267,6 @@ schema:
   podLabels: {}
   securityContext: {}
   podSecurityContext: {}
-  nodeSelector:
-    ng: obs-default-development-101
   ## Deadline for cassandra schema creation job
   activeDeadlineSeconds: 300
   extraEnv:
@@ -570,13 +563,6 @@ collector:
     automountServiceAccountToken: false
     name:
     annotations: {}
-  nodeSelector:
-    ng: obs-default-development-101  
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"    
   affinity: {}
   topologySpreadContraints: []
   podAnnotations: {}
@@ -758,13 +744,6 @@ query:
     automountServiceAccountToken: false
     name:
     annotations: {}
-  nodeSelector:
-    ng: obs-default-development-101  
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"
   affinity: {}
   topologySpreadContraints: []
   podAnnotations: {}

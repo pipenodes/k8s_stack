@@ -1,4 +1,5 @@
 ---
+fullnameOverride: development-loki
 loki:
   auth_enabled: false
   image:
@@ -93,15 +94,6 @@ deploymentMode: SimpleScalable
 
 gateway:
   replicas: 2
-  nodeSelector:
-    ng: obs-default-development-101
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"    
-
-
 ingester:
   replicas: 0
 querier:
@@ -156,35 +148,14 @@ backend:
       emptyDir: {}
     size: 5Gi
     storageClass: gp3-default
-  nodeSelector:
-    ng: obs-default-development-101
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"      
 read:
   replicas: 2
-  nodeSelector:
-    ng: obs-default-development-101
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"    
   persistence:
     enableStatefulSetAutoDeletePVC: true
     size: 5Gi
     storageClass: gp3-default
 write:
   replicas: 2
-  nodeSelector:
-    ng: obs-default-development-101
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"   
   persistence:
     enableStatefulSetAutoDeletePVC: true
     size: 5Gi

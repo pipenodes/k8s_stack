@@ -366,16 +366,9 @@ query:
   ## @param query.nodeSelector Thanos Query node labels for pod assignment
   ## ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector:
-    ng: obs-default-development-101   
   ## @param query.tolerations Thanos Query tolerations for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"
   ## @param query.podLabels Thanos Query pod labels
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
@@ -2394,16 +2387,9 @@ storegateway:
   ## @param storegateway.nodeSelector Thanos Store Gateway node labels for pod assignment
   ## ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector:
-    ng: obs-default-development-101  
   ## @param storegateway.tolerations Thanos Store Gateway tolerations for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
-  tolerations:
-    - key: "workload-type"
-      operator: "Equal"
-      value: "obs"
-      effect: "NoSchedule"
   ## @param storegateway.podLabels Thanos Store Gateway pod labels
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##

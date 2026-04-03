@@ -1,0 +1,15 @@
+﻿x_cp_ns: &cp_ns
+  node-role.kubernetes.io/control-plane: ""
+x_cp_tol: &cp_tol
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+query:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol
+storegateway:
+  nodeSelector: *cp_ns
+  tolerations: *cp_tol
