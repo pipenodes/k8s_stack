@@ -61,3 +61,9 @@ Rever README: índice para `docs/`, shields GitHub.
 Em todo o projeto, trocar `KUBE_CONFIG_B64` por `KUBECONFIG` apenas.
 
 **Resultado:** Workflows passam `secrets.KUBECONFIG`; `configure-kube.sh` lê base64 de `KUBECONFIG`, grava ficheiro e exporta `KUBECONFIG` para o caminho; `github-environments.yaml`, `cluster-map`, docs e README atualizados. **Ação manual:** renomear o secret no GitHub de `KUBE_CONFIG_B64` para `KUBECONFIG` (ou criar novo e apagar o antigo).
+
+### Prompt 11
+
+Histórico novo: um único commit com estado atual limpo + `git push --force-with-lease`.
+
+**Resultado:** Branch órfã com commit `d818e60`; `main` substitui histórico antigo; push para `origin` concluído (sem push protection por segredos no histórico antigo).
