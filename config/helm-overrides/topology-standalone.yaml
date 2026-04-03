@@ -1,0 +1,4 @@
+# Merge opcional após values-<env>.yaml quando deploymentMode=standalone.
+# Adicione aqui chaves suportadas pelos vossos charts (replicaCount, affinity: {}, etc.).
+# Ficheiro vazio é válido para Helm.
+{}

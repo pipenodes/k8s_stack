@@ -1,0 +1,19 @@
+# Topologia de deploy por ambiente (reduz custo fora de produção).
+# deploymentMode: standalone = réplicas mínimas, sem pressão multi-nó; clustered = HA / espalhamento.
+# nodeAffinity: em clustered+enabled, usar labels de nó nos values Helm; desligado = scheduler livre.
+# Overrides genéricos opcionais: config/helm-overrides/topology-<standalone|clustered>.yaml (merge no deploy-workload.sh)
+version: 1
+
+environments:
+  development:
+    topology:
+      deploymentMode: standalone
+      nodeAffinity: disabled
+  staging:
+    topology:
+      deploymentMode: standalone
+      nodeAffinity: disabled
+  production:
+    topology:
+      deploymentMode: clustered
+      nodeAffinity: enabled

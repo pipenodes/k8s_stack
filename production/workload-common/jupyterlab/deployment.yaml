@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter-notebook
+  namespace: production-workload-common
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyter-notebook
+  template:
+    metadata:
+      labels:
+        app: jupyter-notebook
+    spec:
+      containers:
+      - name: jupyter-notebook
+        image: 835497311197.dkr.ecr.us-east-1.amazonaws.com/goapice:jupyter-notebook-delta-develop-latest
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - name: notebook-storage
+          mountPath: /notebooks
+        - name: config-volume
+          mountPath: /home/jovyan/work/.jupyter/jupyter_server_config.py
+          subPath: jupyter_server_config.py
+      volumes:
+      - name: notebook-storage
+        persistentVolumeClaim:
+          claimName: notebook-pvc
+      - name: config-volume
+        configMap:
+          name: jupyter-config

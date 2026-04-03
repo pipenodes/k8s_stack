@@ -1,0 +1,62 @@
+# Restart manual: config/cluster-map.yaml + GitHub Environment (K3s: secret KUBECONFIG).
+name: Deployment restart
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Ambiente logico (GitHub Environment)
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      deployment_name:
+        description: Nome do Deployment
+        required: true
+        type: string
+      namespace:
+        description: Namespace Kubernetes (ex. development-workload-common)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  restart:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar kubectl e yq
+        run: |
+          curl -fsSL -o kubectl "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Carregar mapa de cluster e topologia
+        run: bash .github/scripts/load-cluster-env.sh "${{ inputs.environment }}"
+
+      - name: Credenciais AWS
+        if: env.KUBE_PROVIDER == 'eks'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Configurar kubeconfig e restart
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          DEPLOYMENT_NAME: ${{ inputs.deployment_name }}
+          NAMESPACE: ${{ inputs.namespace }}
+        run: |
+          set -euo pipefail
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME:-}"
+          kubectl rollout restart "deployment/${DEPLOYMENT_NAME}" -n "${NAMESPACE}"
+          kubectl rollout status "deployment/${DEPLOYMENT_NAME}" -n "${NAMESPACE}"

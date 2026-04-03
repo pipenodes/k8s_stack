@@ -1,0 +1,89 @@
+# Contrato GitHub: Environments e secrets esperados por provedor (nomes — valores na UI do GitHub).
+version: 1
+
+environments:
+  development:
+    description: Deploy para cluster de desenvolvimento
+    requiredReviewers: false
+    secretsByProvider:
+      eks:
+        - AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY
+        - AWS_DEFAULT_REGION
+      k3s:
+        - KUBECONFIG
+      aks:
+        - AZURE_CLIENT_ID
+        - AZURE_CLIENT_SECRET
+        - AZURE_TENANT_ID
+        - AZURE_SUBSCRIPTION_ID
+        - AKS_RESOURCE_GROUP
+        - AKS_CLUSTER_NAME
+      gke:
+        - GCP_SA_KEY_JSON
+        - GCP_PROJECT
+        - GKE_CLUSTER_NAME
+        - GKE_ZONE_OR_REGION
+      oke:
+        - OCI_CLI_CONFIG_B64
+        - OKE_CLUSTER_ID
+        - OKE_REGION
+
+  staging:
+    description: Staging (pasta staging/ no repo; pode apontar ao mesmo cluster que development no cluster-map)
+    requiredReviewers: false
+    secretsByProvider:
+      eks:
+        - AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY
+        - AWS_DEFAULT_REGION
+      k3s:
+        - KUBECONFIG
+      aks:
+        - AZURE_CLIENT_ID
+        - AZURE_CLIENT_SECRET
+        - AZURE_TENANT_ID
+        - AZURE_SUBSCRIPTION_ID
+        - AKS_RESOURCE_GROUP
+        - AKS_CLUSTER_NAME
+      gke:
+        - GCP_SA_KEY_JSON
+        - GCP_PROJECT
+        - GKE_CLUSTER_NAME
+        - GKE_ZONE_OR_REGION
+      oke:
+        - OCI_CLI_CONFIG_B64
+        - OKE_CLUSTER_ID
+        - OKE_REGION
+
+  production:
+    description: Deploy para produção (recomendado protection rules e aprovadores)
+    requiredReviewers: true
+    secretsByProvider:
+      eks:
+        - AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY
+        - AWS_DEFAULT_REGION
+      k3s:
+        - KUBECONFIG
+      aks:
+        - AZURE_CLIENT_ID
+        - AZURE_CLIENT_SECRET
+        - AZURE_TENANT_ID
+        - AZURE_SUBSCRIPTION_ID
+        - AKS_RESOURCE_GROUP
+        - AKS_CLUSTER_NAME
+      gke:
+        - GCP_SA_KEY_JSON
+        - GCP_PROJECT
+        - GKE_CLUSTER_NAME
+        - GKE_ZONE_OR_REGION
+      oke:
+        - OCI_CLI_CONFIG_B64
+        - OKE_CLUSTER_ID
+        - OKE_REGION
+
+repositorySecretPrefixes:
+  example:
+    - EKS_DEV_
+    - K3S_DEV_

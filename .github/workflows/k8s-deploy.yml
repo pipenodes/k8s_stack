@@ -1,0 +1,189 @@
+# Deploy por paths: namespaces <repoPath>-workload-* (ver config/cluster-map.yaml).
+name: Kubernetes deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: k8s-stack-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      dev_any: ${{ steps.filter.outputs.dev_any }}
+      prod_any: ${{ steps.filter.outputs.prod_any }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            dev_any:
+              - 'development/**'
+            prod_any:
+              - 'production/**'
+
+  deploy-development:
+    needs: changes
+    if: needs.changes.outputs.dev_any == 'true'
+    environment: development
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            dev_common:
+              - 'development/workload-common/**'
+            dev_vault:
+              - 'development/workload-vault/**'
+            dev_obs:
+              - 'development/workload-obs/**'
+            dev_cron:
+              - 'development/cron-jobs/**'
+
+      - name: Instalar kubectl Helm e yq
+        if: steps.filter.outputs.dev_common == 'true' || steps.filter.outputs.dev_vault == 'true' || steps.filter.outputs.dev_obs == 'true' || steps.filter.outputs.dev_cron == 'true'
+        run: |
+          curl -fsSL -o kubectl "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Carregar mapa de cluster e topologia
+        if: steps.filter.outputs.dev_common == 'true' || steps.filter.outputs.dev_vault == 'true' || steps.filter.outputs.dev_obs == 'true' || steps.filter.outputs.dev_cron == 'true'
+        run: bash .github/scripts/load-cluster-env.sh development
+
+      - name: Credenciais AWS
+        if: (steps.filter.outputs.dev_common == 'true' || steps.filter.outputs.dev_vault == 'true' || steps.filter.outputs.dev_obs == 'true' || steps.filter.outputs.dev_cron == 'true') && env.KUBE_PROVIDER == 'eks'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Development workload-common
+        if: steps.filter.outputs.dev_common == 'true'
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME:-}"
+          bash .github/scripts/deploy-workload.sh development workload-common values-development.yaml
+
+      - name: Development workload-vault
+        if: steps.filter.outputs.dev_vault == 'true'
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME:-}"
+          bash .github/scripts/deploy-workload.sh development workload-vault values-development.yaml
+
+      - name: Development workload-obs
+        if: steps.filter.outputs.dev_obs == 'true'
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME:-}"
+          bash .github/scripts/deploy-workload.sh development workload-obs values-development.yaml
+
+      - name: Development cron-jobs
+        if: steps.filter.outputs.dev_cron == 'true'
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME:-}"
+          bash .github/scripts/deploy-cronjobs.sh development
+
+  deploy-production:
+    needs: changes
+    if: needs.changes.outputs.prod_any == 'true'
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            prod_common:
+              - 'production/workload-common/**'
+            prod_vault:
+              - 'production/workload-vault/**'
+            prod_obs:
+              - 'production/workload-obs/**'
+            prod_cron:
+              - 'production/cron-jobs/**'
+
+      - name: Instalar kubectl Helm e yq
+        if: steps.filter.outputs.prod_common == 'true' || steps.filter.outputs.prod_vault == 'true' || steps.filter.outputs.prod_obs == 'true' || steps.filter.outputs.prod_cron == 'true'
+        run: |
+          curl -fsSL -o kubectl "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Carregar mapa de cluster e topologia
+        if: steps.filter.outputs.prod_common == 'true' || steps.filter.outputs.prod_vault == 'true' || steps.filter.outputs.prod_obs == 'true' || steps.filter.outputs.prod_cron == 'true'
+        run: bash .github/scripts/load-cluster-env.sh production
+
+      - name: Credenciais AWS
+        if: (steps.filter.outputs.prod_common == 'true' || steps.filter.outputs.prod_vault == 'true' || steps.filter.outputs.prod_obs == 'true' || steps.filter.outputs.prod_cron == 'true') && env.KUBE_PROVIDER == 'eks'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Production workload-common
+        if: steps.filter.outputs.prod_common == 'true'
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME:-}"
+          bash .github/scripts/deploy-workload.sh production workload-common values-production.yaml
+
+      - name: Production workload-vault
+        if: steps.filter.outputs.prod_vault == 'true'
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME:-}"
+          bash .github/scripts/deploy-workload.sh production workload-vault values-production.yaml
+
+      - name: Production workload-obs
+        if: steps.filter.outputs.prod_obs == 'true'
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME:-}"
+          bash .github/scripts/deploy-workload.sh production workload-obs values-production.yaml
+
+      - name: Production cron-jobs
+        if: steps.filter.outputs.prod_cron == 'true'
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME:-}"
+          bash .github/scripts/deploy-cronjobs.sh production

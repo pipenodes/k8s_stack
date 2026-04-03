@@ -1,0 +1,35 @@
+# Mapa: ambientes lógicos → cluster K3s on-premises e namespace `<repoPath>-workload-*`.
+# Autenticação CI: secret KUBECONFIG por GitHub Environment (ver config/github-environments.yaml).
+# Para um único K3s partilhado entre dev/staging/prod, use o mesmo clusterRef nos três ambientes.
+version: 2
+
+clusters:
+  k3s_development:
+    provider: k3s
+    k3s:
+      description: K3s on-prem — desenvolvimento
+  k3s_staging:
+    provider: k3s
+    k3s:
+      description: K3s on-prem — staging
+  k3s_production:
+    provider: k3s
+    k3s:
+      description: K3s on-prem — produção
+
+environments:
+  development:
+    repoPath: development
+    clusterRef: k3s_development
+    githubEnvironment: development
+    valuesFileHelm: values-development.yaml
+  staging:
+    repoPath: staging
+    clusterRef: k3s_staging
+    githubEnvironment: staging
+    valuesFileHelm: values-staging.yaml
+  production:
+    repoPath: production
+    clusterRef: k3s_production
+    githubEnvironment: production
+    valuesFileHelm: values-production.yaml

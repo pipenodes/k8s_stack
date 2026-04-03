@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jupyter-config
+  namespace: development-workload-common
+data:
+  jupyter_server_config.py: |
+    c.PasswordIdentityProvider.hashed_password = 'argon2:$argon2id$v=19$m=10240,t=10,p=8$tGHzDQ3UiyMgjZo8XxYRyg$I+vOgrUZEHHtKPxC2l+fAsxPF7ZJjD+7eYlwz4NOgn4'
+    c.ServerApp.root_dir = '/notebooks'

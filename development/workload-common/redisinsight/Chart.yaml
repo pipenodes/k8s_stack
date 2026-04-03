@@ -1,0 +1,16 @@
+apiVersion: v2
+appVersion: "2.46"
+description: Redisinsight helm chart for Kubernetes
+home: https://github.com/hansehe/redisinsight-helm
+icon: https://raw.githubusercontent.com/hansehe/redisinsight-helm/master/helm/redisinsight.png
+keywords:
+- redis
+- redisinsight
+maintainers:
+- email: hans.erik.heggem@gmail.com
+  name: hansehe
+name: redisinsight
+sources:
+- https://github.com/hansehe/redisinsight-helm
+type: application
+version: 0.1.1

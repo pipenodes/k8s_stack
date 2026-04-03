@@ -1,0 +1,3 @@
+# Merge opcional após values-<env>.yaml quando deploymentMode=clustered.
+# Ex.: affinity, topologySpreadConstraints, replicaCount — conforme cada chart.
+{}
