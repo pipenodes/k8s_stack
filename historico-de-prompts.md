@@ -133,3 +133,9 @@ CockroachDB: disco 10G em development e production, StorageClass `local-path`.
 Executar plano de deploy: StorageClass `local-path`, ordem obs→vault→common→cron, CRD Cockroach antes do helm, saltar Traefik em K3s, namespace idempotente.
 
 **Resultado:** `config/k8s/storageclass-local-path.yaml`; `ensure-local-path-storageclass.sh`, `apply-crdb-operator-crds.sh`; `deploy-workload.sh` atualizado; `k8s-deploy.yml` reordenado + passo StorageClass (K3s); HOWTO e README atualizados.
+
+### Prompt 23
+
+Criar `deploy.ack` com conteúdo `1` na raiz de `development/` e de `production/`.
+
+**Resultado:** Ficheiros `development/deploy.ack` e `production/deploy.ack`.
