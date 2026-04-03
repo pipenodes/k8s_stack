@@ -187,3 +187,9 @@ Corrigir falhas de deploy: timeout nos hooks do `kube-prometheus-stack` e Job im
 Executar `bump-deploy-ack`, commit e push; opcionalmente limpar Job Jaeger no cluster.
 
 **Resultado:** `tools/bump-deploy-ack.ps1` (timestamp `2026-04-03T23:20:14Z`); `git commit` + `git push` em `main` (`c97a880`); `kubectl` em context `default` sem Job `jaeger-cassandra-schema` no cluster atual; este registo.
+
+### Prompt 32
+
+Voltar a correr `bump-deploy-ack.ps1`, commit e push.
+
+**Resultado:** Timestamp `2026-04-03T23:33:28Z` em 39 `deploy.ack`; commit `3470dd5` + push `main`; este registo.
