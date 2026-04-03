@@ -79,3 +79,9 @@ Plano: `KUBECONFIG` em texto claro (sem base64 no CI); workflows chamam `configu
 Incluir no `workload-common` CockroachDB com Helm + Operator (Cockroach Labs).
 
 **Resultado:** Vendored `cockroachdb-parent` de [cockroachdb/helm-charts](https://github.com/cockroachdb/helm-charts) em `development/workload-common` e `production/workload-common`; `values-development.yaml` e `values-production.yaml` com região `on-prem`, namespaces e storage; README e HOWTO atualizados; `deploy-workload.sh` com `--timeout 25m` para este chart.
+
+### Prompt 14
+
+CI: Helm/kubectl `loading config file` / `file name too long` com kubeconfig no secret.
+
+**Resultado:** Workflows passam o secret para **`KUBE_CONFIG`** (não `KUBECONFIG`); `configure-kube.sh` grava `.ci-kubeconfig-path`; `apply-kubeconfig-env.sh` com `source` exporta `KUBECONFIG` no shell do step; README/docs/github-environments atualizados.

@@ -22,7 +22,7 @@ Guia operacional para navegar no monorepo, configurar clusters e perceber o que 
 
 Contrato de **nomes de secrets** esperados por provedor (EKS, K3s, …). Os **valores** configuram-se na UI do GitHub → Settings → Environments.
 
-Para **K3s**, o essencial é o secret **`KUBECONFIG`** com o **conteúdo YAML** do kubeconfig em **texto claro** (multilinha na UI do GitHub), por Environment.
+Para **K3s**, o essencial é o secret **`KUBECONFIG`** (nome na UI do GitHub) com o **conteúdo YAML** do kubeconfig em **texto claro** (multilinha), por Environment. Nos workflows o valor é injetado na env **`KUBE_CONFIG`**; a variável **`KUBECONFIG`** no job fica reservada ao caminho do ficheiro após `configure-kube.sh` + `source apply-kubeconfig-env.sh`.
 
 ### `workload-topology.yaml`
 
@@ -58,7 +58,7 @@ Cada chart tem chaves diferentes (`replicaCount` vs `replica.replicaCount`, etc.
 | Script | Função |
 |--------|--------|
 | `load-cluster-env.sh` | Lê `cluster-map.yaml` (+ topologia) e exporta `KUBE_PROVIDER`, `EKS_CLUSTER_NAME` (se EKS), `TOPOLOGY_MODE`, etc. para o job. |
-| `configure-kube.sh` | `eks` → `aws eks update-kubeconfig` (2.º arg = nome do cluster); `k3s` → lê env `KUBECONFIG` (texto do kubeconfig), escreve ficheiro e exporta `KUBECONFIG` para o caminho. |
+| `configure-kube.sh` | `eks` → `aws eks update-kubeconfig` (2.º arg = nome do cluster); `k3s` → lê **`KUBE_CONFIG`** (texto do kubeconfig), grava ficheiro; o `source apply-kubeconfig-env.sh` no mesmo `run` exporta **`KUBECONFIG`** = path. |
 | `deploy-workload.sh` | Helm/kubectl por pasta de app; merge dos overrides de topologia como acima. |
 | `deploy-cronjobs.sh` | `kubectl apply` em `cron-jobs/`. |
 

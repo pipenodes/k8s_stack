@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Configura kubeconfig. Uso: configure-kube.sh <provider> [clusterName]
-# eks: clusterName + AWS_DEFAULT_REGION; k3s: env KUBECONFIG (conteúdo YAML do kubeconfig) → ficheiro + export KUBECONFIG=caminho
+# eks: clusterName + AWS_DEFAULT_REGION
+# k3s: env KUBE_CONFIG = conteúdo YAML do kubeconfig (secret GitHub KUBECONFIG → env KUBE_CONFIG no workflow)
+#     NÃO uses a env KUBECONFIG para o conteúdo: é o nome reservado para caminho(s) de ficheiro (kubectl/helm).
 set -euo pipefail
 PROVIDER="${1:?}"
 
@@ -11,14 +13,15 @@ case "$PROVIDER" in
     aws eks update-kubeconfig --name "${CLUSTER_NAME}" --region "${REGION}"
     ;;
   k3s)
-    if [ -z "${KUBECONFIG:-}" ]; then
-      echo "KUBECONFIG is required for k3s provider (kubeconfig file content as plain text)" >&2
+    if [ -z "${KUBE_CONFIG:-}" ]; then
+      echo "KUBE_CONFIG is required for k3s provider (kubeconfig YAML from GitHub secret; map secrets.KUBECONFIG to env KUBE_CONFIG)" >&2
       exit 1
     fi
-    KUBECONFIG_INPUT="${KUBECONFIG}"
     TMP="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/kubeconfig-$$"
-    printf '%s\n' "${KUBECONFIG_INPUT}" > "${TMP}"
+    printf '%s\n' "${KUBE_CONFIG}" > "${TMP}"
     chmod 600 "${TMP}"
+    ROOT="${GITHUB_WORKSPACE:-$(pwd)}"
+    printf '%s' "${TMP}" > "${ROOT}/.ci-kubeconfig-path"
     if [ -n "${GITHUB_ENV:-}" ]; then
       echo "KUBECONFIG=${TMP}" >> "${GITHUB_ENV}"
     fi

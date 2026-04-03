@@ -23,7 +23,7 @@ case "${PROVIDER}" in
     echo "EKS_CLUSTER_NAME=${CN}" >> "${GITHUB_ENV}"
     ;;
   k3s)
-    # KUBECONFIG (secret) vem dos secrets do GitHub Environment
+    # Secret GitHub KUBECONFIG → env KUBE_CONFIG no workflow (conteúdo); configure-kube grava ficheiro e exporta KUBECONFIG=path
     ;;
 esac
 

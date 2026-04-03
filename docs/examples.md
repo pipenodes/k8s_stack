@@ -48,6 +48,8 @@ Get-Content "$env:USERPROFILE\.kube\config" -Raw
 
 Opcional — se tiveres o kubeconfig em base64, descodifica localmente e cola o **YAML** no secret; o CI **não** descodifica base64.
 
+No GitHub Actions o secret mapeia para a env **`KUBE_CONFIG`** (o nome `KUBECONFIG` no sistema é para o path do ficheiro).
+
 ## Exemplo 3 — Preencher `topology-standalone.yaml` (override global)
 
 Só faz sentido se **vários** charts no mesmo workload aceitarem a mesma chave. Exemplo ilustrativo (ajusta aos charts reais):

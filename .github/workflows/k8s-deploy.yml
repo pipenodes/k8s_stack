@@ -78,52 +78,56 @@ jobs:
         if: steps.filter.outputs.dev_common == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
         run: |
           if [ "${KUBE_PROVIDER}" = "eks" ]; then
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME}"
           else
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
+          source .github/scripts/apply-kubeconfig-env.sh
           bash .github/scripts/deploy-workload.sh development workload-common values-development.yaml
 
       - name: Development workload-vault
         if: steps.filter.outputs.dev_vault == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
         run: |
           if [ "${KUBE_PROVIDER}" = "eks" ]; then
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME}"
           else
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
+          source .github/scripts/apply-kubeconfig-env.sh
           bash .github/scripts/deploy-workload.sh development workload-vault values-development.yaml
 
       - name: Development workload-obs
         if: steps.filter.outputs.dev_obs == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
         run: |
           if [ "${KUBE_PROVIDER}" = "eks" ]; then
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME}"
           else
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
+          source .github/scripts/apply-kubeconfig-env.sh
           bash .github/scripts/deploy-workload.sh development workload-obs values-development.yaml
 
       - name: Development cron-jobs
         if: steps.filter.outputs.dev_cron == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
         run: |
           if [ "${KUBE_PROVIDER}" = "eks" ]; then
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME}"
           else
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
+          source .github/scripts/apply-kubeconfig-env.sh
           bash .github/scripts/deploy-cronjobs.sh development
 
   deploy-production:
@@ -172,50 +176,54 @@ jobs:
         if: steps.filter.outputs.prod_common == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
         run: |
           if [ "${KUBE_PROVIDER}" = "eks" ]; then
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME}"
           else
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
+          source .github/scripts/apply-kubeconfig-env.sh
           bash .github/scripts/deploy-workload.sh production workload-common values-production.yaml
 
       - name: Production workload-vault
         if: steps.filter.outputs.prod_vault == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
         run: |
           if [ "${KUBE_PROVIDER}" = "eks" ]; then
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME}"
           else
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
+          source .github/scripts/apply-kubeconfig-env.sh
           bash .github/scripts/deploy-workload.sh production workload-vault values-production.yaml
 
       - name: Production workload-obs
         if: steps.filter.outputs.prod_obs == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
         run: |
           if [ "${KUBE_PROVIDER}" = "eks" ]; then
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME}"
           else
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
+          source .github/scripts/apply-kubeconfig-env.sh
           bash .github/scripts/deploy-workload.sh production workload-obs values-production.yaml
 
       - name: Production cron-jobs
         if: steps.filter.outputs.prod_cron == 'true'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
         run: |
           if [ "${KUBE_PROVIDER}" = "eks" ]; then
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}" "${EKS_CLUSTER_NAME}"
           else
             bash .github/scripts/configure-kube.sh "${KUBE_PROVIDER}"
           fi
+          source .github/scripts/apply-kubeconfig-env.sh
           bash .github/scripts/deploy-cronjobs.sh production

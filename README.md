@@ -59,7 +59,7 @@ O [`deploy-workload.sh`](.github/scripts/deploy-workload.sh) faz merge de `confi
 
 ## Clusters e namespaces
 
-- **K3s:** configurar o secret **`KUBECONFIG`** com o **conteúdo textual** do ficheiro kubeconfig (a UI do GitHub aceita **multilinha**; não usar base64). O passo **Credenciais AWS** no workflow só corre se `KUBE_PROVIDER == eks` (após carregar o mapa).
+- **K3s:** na UI do GitHub o secret chama-se **`KUBECONFIG`** (conteúdo YAML do kubeconfig, multilinha). No workflow o valor é passado à env **`KUBE_CONFIG`** — **não** à env `KUBECONFIG`, porque esta última é reservada ao **caminho do ficheiro** (kubectl/helm). O passo **Credenciais AWS** só corre se `KUBE_PROVIDER == eks` (após carregar o mapa).
 
 ## GitHub Actions
 
@@ -68,15 +68,15 @@ O [`deploy-workload.sh`](.github/scripts/deploy-workload.sh) faz merge de `confi
 | [`.github/workflows/k8s-deploy.yml`](.github/workflows/k8s-deploy.yml) | `deploy-development` / `deploy-production` com `environment` + `load-cluster-env.sh` (provedor + topologia). |
 | [`.github/workflows/deployment-restart.yml`](.github/workflows/deployment-restart.yml) | Restart manual; mesmo fluxo de credenciais condicionais. |
 
-Scripts: [`configure-kube.sh`](.github/scripts/configure-kube.sh), [`load-cluster-env.sh`](.github/scripts/load-cluster-env.sh), [`deploy-workload.sh`](.github/scripts/deploy-workload.sh), [`deploy-cronjobs.sh`](.github/scripts/deploy-cronjobs.sh).
+Scripts: [`configure-kube.sh`](.github/scripts/configure-kube.sh), [`apply-kubeconfig-env.sh`](.github/scripts/apply-kubeconfig-env.sh), [`load-cluster-env.sh`](.github/scripts/load-cluster-env.sh), [`deploy-workload.sh`](.github/scripts/deploy-workload.sh), [`deploy-cronjobs.sh`](.github/scripts/deploy-cronjobs.sh).
 
-**EKS vs K3s:** o [`load-cluster-env.sh`](.github/scripts/load-cluster-env.sh) só exporta `EKS_CLUSTER_NAME` quando o [`cluster-map.yaml`](config/cluster-map.yaml) tem `provider: eks` para o `clusterRef` do ambiente. Com **K3s**, o workflow usa apenas o secret `KUBECONFIG`; não é necessário nome de cluster EKS no CI.
+**EKS vs K3s:** o [`load-cluster-env.sh`](.github/scripts/load-cluster-env.sh) só exporta `EKS_CLUSTER_NAME` quando o [`cluster-map.yaml`](config/cluster-map.yaml) tem `provider: eks` para o `clusterRef` do ambiente. Com **K3s**, o workflow injeta o secret `KUBECONFIG` em **`KUBE_CONFIG`** e, após `configure-kube.sh`, faz `source` de `apply-kubeconfig-env.sh` para exportar **`KUBECONFIG`** = caminho do ficheiro temporário (compatível com Helm/kubectl).
 
 ### Secrets
 
 Por **Environment** (ver [`github-environments.yaml`](config/github-environments.yaml)):
 
-- **K3s:** `KUBECONFIG` (obrigatório para o CI falar com o API server; runners precisam de rota à rede on‑prem se for o caso).
+- **K3s:** secret **`KUBECONFIG`** (valor YAML; no job vira `KUBE_CONFIG` — ver acima).
 - **EKS (se mudarem o mapa para `provider: eks`):** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`.
 
 ### Ferramenta local de prefixos

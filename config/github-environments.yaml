@@ -1,5 +1,5 @@
 # Contrato GitHub: Environments e secrets esperados por provedor (nomes — valores na UI do GitHub).
-# K3s: KUBECONFIG = conteúdo textual do ficheiro kubeconfig (multilinha); não usar base64.
+# K3s: secret nome KUBECONFIG (YAML do kubeconfig). No CI mapeia-se para env KUBE_CONFIG; a env KUBECONFIG fica só o path do ficheiro.
 version: 1
 
 environments:
