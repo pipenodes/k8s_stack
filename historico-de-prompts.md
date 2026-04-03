@@ -181,3 +181,9 @@ Implementar plano "local-path, sem nodeSelector, scheduling no control-plane (af
 Corrigir falhas de deploy: timeout nos hooks do `kube-prometheus-stack` e Job imutável `jaeger-cassandra-schema` no `helm upgrade`.
 
 **Resultado:** Job Cassandra schema com hooks Helm (`post-install`/`post-upgrade`, `before-hook-creation`); `deploy-workload.sh`: timeout KPS `35m`; HOWTO §3/§9 atualizados; este registo.
+
+### Prompt 31
+
+Executar `bump-deploy-ack`, commit e push; opcionalmente limpar Job Jaeger no cluster.
+
+**Resultado:** `tools/bump-deploy-ack.ps1` (timestamp `2026-04-03T23:20:14Z`); `git commit` + `git push` em `main` (`c97a880`); `kubectl` em context `default` sem Job `jaeger-cassandra-schema` no cluster atual; este registo.
