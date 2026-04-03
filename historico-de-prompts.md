@@ -85,3 +85,15 @@ Incluir no `workload-common` CockroachDB com Helm + Operator (Cockroach Labs).
 CI: Helm/kubectl `loading config file` / `file name too long` com kubeconfig no secret.
 
 **Resultado:** Workflows passam o secret para **`KUBE_CONFIG`** (não `KUBECONFIG`); `configure-kube.sh` grava `.ci-kubeconfig-path`; `apply-kubeconfig-env.sh` com `source` exporta `KUBECONFIG` no shell do step; README/docs/github-environments atualizados.
+
+### Prompt 15
+
+CockroachDB `values-*`: StorageClass `local-path` em dev e prod.
+
+**Resultado:** `storageClassName: local-path` em `dataStore.volumeClaimTemplate.spec` nos dois ficheiros.
+
+### Prompt 16
+
+Renomear pastas `cockroachdb-parent` → `cockroachdb` em development e production `workload-common`.
+
+**Resultado:** `git mv` para `workload-common/cockroachdb/`; `deploy-workload.sh` timeout alinhado ao nome `cockroachdb`; README, HOWTO e comentários nos `values-*` atualizados.

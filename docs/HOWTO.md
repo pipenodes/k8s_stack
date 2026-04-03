@@ -7,7 +7,7 @@ Guia operacional para navegar no monorepo, configurar clusters e perceber o que 
 - **Pastas por ambiente lógico:** `development/`, `staging/` (opcional), `production/` — cada uma com `workload-common`, `workload-vault`, `workload-obs`, `cron-jobs`.
 - **Namespace no cluster:** `<repoPath>-<workload>` — exemplo: pasta `development/workload-common` → namespace **`development-workload-common`**.
 - **Deploy:** GitHub Actions na branch `main`, com filtros de paths; cada job usa um **GitHub Environment** (`development`, `staging`, `production`) para secrets.
-- **CockroachDB** (`workload-common/cockroachdb-parent`): chart oficial [cockroachdb-parent](https://github.com/cockroachdb/helm-charts/tree/master/cockroachdb-parent) (CockroachDB Operator + CRDB). O CI usa `helm upgrade` como nas outras apps; primeiro deploy pode demorar (CRDs, operator, certificados). Ajusta em `values-*-*.yaml` os campos `operator.cloudRegion` e `cockroachdb.cockroachdb.crdbCluster.regions[].code` para coincidirem com `topology.kubernetes.io/region` nos nós, se existir.
+- **CockroachDB** (`workload-common/cockroachdb/`): chart oficial [cockroachdb-parent](https://github.com/cockroachdb/helm-charts/tree/master/cockroachdb-parent) (CockroachDB Operator + CRDB). O CI usa `helm upgrade` como nas outras apps; primeiro deploy pode demorar (CRDs, operator, certificados). Ajusta em `values-*-*.yaml` os campos `operator.cloudRegion` e `cockroachdb.cockroachdb.crdbCluster.regions[].code` para coincidirem com `topology.kubernetes.io/region` nos nós, se existir.
 
 ## 2. Ficheiros em `config/`
 

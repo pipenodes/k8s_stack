@@ -26,7 +26,7 @@ for application_folder_name in */; do
   if [ -f "$basename_application_folder/Chart.yaml" ]; then
     echo "Deploying Helm chart: $basename_application_folder into namespace ${NAMESPACE}"
     helm_extra_args=()
-    if [ "$basename_application_folder" = "cockroachdb-parent" ]; then
+    if [ "$basename_application_folder" = "cockroachdb" ]; then
       helm_extra_args+=(--timeout 25m)
     fi
     # shellcheck disable=SC2086
