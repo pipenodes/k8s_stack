@@ -66,6 +66,7 @@ Cada chart tem chaves diferentes (`replicaCount` vs `replica.replicaCount`, etc.
 | `apply-crdb-operator-crds.sh` | `kubectl apply` do CRD `CrdbCluster` a partir do repositório `cockroachdb-operator` (ref `CRDB_OPERATOR_CRD_REF`, default `master`). |
 | `deploy-workload.sh` | Cria namespace do workload; Helm/kubectl por pasta; em `k3s` salta chart `traefik`; antes de cockroachdb aplica CRDs; merge dos overrides de topologia. |
 | `deploy-cronjobs.sh` | `kubectl apply` em `cron-jobs/`. |
+| [`tools/bump-deploy-ack.sh`](../tools/bump-deploy-ack.sh) / [`bump-deploy-ack.ps1`](../tools/bump-deploy-ack.ps1) | Atualizam todos os `deploy.ack` com timestamp **ISO 8601 UTC** (`YYYY-MM-DDTHH:MM:SSZ`) para o paths-filter disparar deploy; ver [README-deploy-ack](../tools/README-deploy-ack.md). |
 
 ## 4. Workflows GitHub Actions
 

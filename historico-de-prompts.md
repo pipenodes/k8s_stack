@@ -139,3 +139,15 @@ Executar plano de deploy: StorageClass `local-path`, ordem obs→vault→common�
 Criar `deploy.ack` com conteúdo `1` na raiz de `development/` e de `production/`.
 
 **Resultado:** Ficheiros `development/deploy.ack` e `production/deploy.ack`.
+
+### Prompt 24
+
+`deploy.ack` em todas as pastas de deploy em development/production e scripts (PowerShell + shell) para atualizar com data Julian; alternativas documentadas.
+
+**Resultado:** `tools/bump-deploy-ack.sh`, `tools/bump-deploy-ack.ps1`, `tools/README-deploy-ack.md`; todos os `deploy.ack` nas raízes env/cron-jobs/workload-* e em cada app; HOWTO com referência aos scripts.
+
+### Prompt 25
+
+Timestamp nos `deploy.ack`: preferir formato melhor que Julian.
+
+**Resultado:** Valor por defeito nos scripts passou a **ISO 8601 UTC** (`YYYY-MM-DDTHH:MM:SSZ`); README-deploy-ack e HOWTO atualizados; `bump-deploy-ack.ps1` aplicado para alinhar ficheiros `deploy.ack`.
