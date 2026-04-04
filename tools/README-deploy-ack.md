@@ -21,12 +21,13 @@ Exemplo: `2026-04-03T18:45:00Z`
 | [`bump-deploy-ack.sh`](bump-deploy-ack.sh) | Git Bash / Linux / macOS |
 | [`bump-deploy-ack.ps1`](bump-deploy-ack.ps1) | Windows PowerShell |
 
-Ambos percorrem `development/` e `production/` e escrevem `deploy.ack` em:
+Ambos percorrem `development/`, `production/` e **`observability/workload-obs/`** e escrevem `deploy.ack` em:
 
 - `<env>/deploy.ack`
 - `<env>/cron-jobs/deploy.ack` (se a pasta existir)
 - `<env>/workload-{common,vault,obs}/deploy.ack`
 - cada subpasta direta desses `workload-*` (ex.: `workload-obs/promtail/deploy.ack`)
+- `observability/workload-obs/deploy.ack` e cada subpasta direta do stack de obs (ex.: `observability/workload-obs/loki/deploy.ack`)
 
 **Uso:**
 

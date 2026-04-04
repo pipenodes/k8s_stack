@@ -31,4 +31,12 @@ for env in development production; do
     done
   done
 done
+obs_wl="${ROOT}/observability/workload-obs"
+if [ -d "${obs_wl}" ]; then
+  write_ack "${obs_wl}/deploy.ack"
+  for appdir in "${obs_wl}"/*/; do
+    [ -d "${appdir}" ] || continue
+    write_ack "${appdir}deploy.ack"
+  done
+fi
 echo "Feito."

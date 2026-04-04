@@ -1,24 +1,31 @@
 #!/usr/bin/env bash
-# Deploy apps under <repoPath>/<workload>/ com namespace <repoPath>-<workload>
-# Opcional: merge topology-*.yaml; com KUBE_PROVIDER=k3s merge config/helm-overrides/k3s/<chart>.yaml-<standalone|clustered>.yaml (via workload-topology.yaml)
-# Correr todos os charts/manifests; exit 1 no final se algum falhou.
+# Deploy apps under <repoPath>/<workload>/ com namespace <repoPath>-workload-*>
+# workload-obs: charts em observability/workload-obs/; namespace em OBS_NAMESPACE (cluster-map) ou platform-workload-obs.
+# Opcional: merge topology-*.yaml; com KUBE_PROVIDER=k3s merge config/helm-overrides/k3s/<chart>.yaml (via workload-topology.yaml)
 # Uso: deploy-workload.sh <development|staging|production> <workload-common|workload-vault|workload-obs> <values-*.yaml>
 set -euo pipefail
 ENV_DIR="${1:?}"
 WORKLOAD="${2:?}"
 VALUES_FILE="${3:?}"
 ROOT="${GITHUB_WORKSPACE:-$(pwd)}"
-NAMESPACE="${ENV_DIR}-${WORKLOAD}"
 TOPOLOGY_MAP="${ROOT}/config/workload-topology.yaml"
 
-cd "${ROOT}/${ENV_DIR}/${WORKLOAD}"
+if [ "${WORKLOAD}" = "workload-obs" ]; then
+  WORKLOAD_DIR="${ROOT}/observability/workload-obs"
+  NAMESPACE="${OBS_NAMESPACE:-platform-workload-obs}"
+else
+  WORKLOAD_DIR="${ROOT}/${ENV_DIR}/${WORKLOAD}"
+  NAMESPACE="${ENV_DIR}-${WORKLOAD}"
+fi
+
+cd "${WORKLOAD_DIR}"
 
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
 # OpenTelemetry (e outros) podem referir <env>-workload-vault antes do passo workload-vault no CI.
 if [ "${WORKLOAD}" = "workload-obs" ]; then
-  VAULT_NS="${ENV_DIR}-workload-vault"
-  kubectl create namespace "${VAULT_NS}" --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create namespace "development-workload-vault" --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create namespace "production-workload-vault" --dry-run=client -o yaml | kubectl apply -f -
 fi
 
 helm_topology_args=()
@@ -61,6 +68,11 @@ for application_folder_name in "${chart_iter[@]}"; do
       echo "Skipping Helm chart traefik (KUBE_PROVIDER=k3s: usar Traefik nativo do K3s)."
       continue
     fi
+    VALUES_PATH="${basename_application_folder}/${VALUES_FILE}"
+    if [ ! -f "${VALUES_PATH}" ]; then
+      echo "Skipping ${basename_application_folder}: missing ${VALUES_PATH}" >&2
+      continue
+    fi
     echo "Deploying Helm chart: $basename_application_folder into namespace ${NAMESPACE}"
     helm_extra_args=()
     helm_k3s_args=()
@@ -86,7 +98,7 @@ for application_folder_name in "${chart_iter[@]}"; do
     if ! helm upgrade --install "$basename_application_folder" "./$application_folder_name" \
       -n "${NAMESPACE}" \
       --create-namespace \
-      -f "$basename_application_folder/${VALUES_FILE}" \
+      -f "${VALUES_PATH}" \
       "${helm_topology_args[@]}" \
       "${helm_k3s_args[@]}" \
       "${helm_extra_args[@]}"; then

@@ -1,19 +1,30 @@
 # Mapa: ambientes lógicos → cluster K3s on-premises e namespace `<repoPath>-workload-*`.
 # Autenticação CI: secret KUBECONFIG por GitHub Environment (ver config/github-environments.yaml).
 # Para um único K3s partilhado entre dev/staging/prod, use o mesmo clusterRef nos três ambientes.
+#
+# Observabilidade: charts em observability/workload-obs/ (um stack por cluster físico).
+# - observability.namespace: namespace Kubernetes do stack (ex.: platform-workload-obs).
+# - observability.deployForEnvironments: opcional; se definido, só esses ambientes lógicos
+#   correm o deploy de workload-obs no CI (evita dois helm upgrade no mesmo cluster).
 version: 2
 
 clusters:
   k3s_development:
     provider: k3s
+    observability:
+      namespace: platform-workload-obs
     k3s:
       description: K3s on-prem — desenvolvimento
   k3s_staging:
     provider: k3s
+    observability:
+      namespace: platform-workload-obs
     k3s:
       description: K3s on-prem — staging
   k3s_production:
     provider: k3s
+    observability:
+      namespace: platform-workload-obs
     k3s:
       description: K3s on-prem — produção
 

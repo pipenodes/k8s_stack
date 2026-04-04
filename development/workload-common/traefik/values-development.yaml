@@ -1238,7 +1238,7 @@ extraObjects:
     kind: IngressRoute
     metadata:
       name: grafana
-      namespace: development-workload-obs
+      namespace: platform-workload-obs
     spec:
       entryPoints:
       - websecure
@@ -1252,7 +1252,7 @@ extraObjects:
     kind: IngressRoute
     metadata:
       name: loki
-      namespace: development-workload-obs
+      namespace: platform-workload-obs
     spec:
       entryPoints:
       - websecure
@@ -1280,7 +1280,7 @@ extraObjects:
     kind: IngressRoute
     metadata:
       name: tempo
-      namespace: development-workload-obs
+      namespace: platform-workload-obs
     spec:
       entryPoints:
       - web
@@ -1294,7 +1294,7 @@ extraObjects:
     kind: IngressRoute
     metadata:
       name: jaeger
-      namespace: development-workload-obs
+      namespace: platform-workload-obs
     spec:
       entryPoints:
       - websecure
@@ -1308,7 +1308,7 @@ extraObjects:
     kind: IngressRoute
     metadata:
       name: prometheus
-      namespace: development-workload-obs
+      namespace: platform-workload-obs
     spec:
       entryPoints:
       - websecure

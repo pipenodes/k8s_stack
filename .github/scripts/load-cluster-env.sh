@@ -27,6 +27,22 @@ case "${PROVIDER}" in
     ;;
 esac
 
+# Observabilidade deduplicada (observability/workload-obs): namespace + quem pode fazer deploy no CI
+OBS_NS=$(yq -r "(.clusters.${CLUSTER_REF}.observability // {}).namespace // \"\"" "${MAP}")
+if [ -n "${OBS_NS}" ] && [ "${OBS_NS}" != "null" ]; then
+  echo "OBS_NAMESPACE=${OBS_NS}" >> "${GITHUB_ENV}"
+fi
+LEN=$(yq "(.clusters.${CLUSTER_REF}.observability // {}).deployForEnvironments // [] | length" "${MAP}")
+if [ "${LEN}" = "0" ]; then
+  echo "SKIP_WORKLOAD_OBS=0" >> "${GITHUB_ENV}"
+else
+  if yq -e "(.clusters.${CLUSTER_REF}.observability // {}).deployForEnvironments[] | select(. == \"${ENV_NAME}\")" "${MAP}" >/dev/null 2>&1; then
+    echo "SKIP_WORKLOAD_OBS=0" >> "${GITHUB_ENV}"
+  else
+    echo "SKIP_WORKLOAD_OBS=1" >> "${GITHUB_ENV}"
+  fi
+fi
+
 if [ -f "${TOPOLOGY}" ]; then
   MODE=$(yq -r ".environments.${ENV_NAME}.topology.deploymentMode // \"standalone\"" "${TOPOLOGY}")
   AFF=$(yq -r ".environments.${ENV_NAME}.topology.nodeAffinity // \"disabled\"" "${TOPOLOGY}")

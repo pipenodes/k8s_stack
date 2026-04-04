@@ -1,4 +1,4 @@
-# Scheduling por nó: usar schema/collector/query.nodeSelector em values-development (ex.: hostname fedora).
+# Scheduling por nó: usar schema/collector/query.nodeSelector em observability/workload-obs/jaeger/values-development.yaml (ex.: hostname fedora).
 schema:
   tolerations:
     - key: node-role.kubernetes.io/control-plane

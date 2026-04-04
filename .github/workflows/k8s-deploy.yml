@@ -1,4 +1,5 @@
 # Deploy por paths: namespaces <repoPath>-workload-* (ver config/cluster-map.yaml).
+# Observabilidade: charts em observability/workload-obs → namespace platform-workload-obs (cluster-map).
 # Ordem: StorageClass (K3s) -> workload-obs -> workload-vault -> workload-common -> cron-jobs.
 name: Kubernetes deploy
 
@@ -50,6 +51,7 @@ jobs:
             dev_vault:
               - 'development/workload-vault/**'
             dev_obs:
+              - 'observability/**'
               - 'development/workload-obs/**'
             dev_cron:
               - 'development/cron-jobs/**'
@@ -91,7 +93,7 @@ jobs:
           bash .github/scripts/ensure-local-path-storageclass.sh
 
       - name: Development workload-obs
-        if: steps.filter.outputs.dev_obs == 'true'
+        if: steps.filter.outputs.dev_obs == 'true' && env.SKIP_WORKLOAD_OBS != '1'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
@@ -163,6 +165,7 @@ jobs:
             prod_vault:
               - 'production/workload-vault/**'
             prod_obs:
+              - 'observability/**'
               - 'production/workload-obs/**'
             prod_cron:
               - 'production/cron-jobs/**'
@@ -204,7 +207,7 @@ jobs:
           bash .github/scripts/ensure-local-path-storageclass.sh
 
       - name: Production workload-obs
-        if: steps.filter.outputs.prod_obs == 'true'
+        if: steps.filter.outputs.prod_obs == 'true' && env.SKIP_WORKLOAD_OBS != '1'
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           KUBE_CONFIG: ${{ secrets.KUBECONFIG }}

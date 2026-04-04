@@ -91,7 +91,7 @@ Dentro de `development/`, `staging/` (opcional), `production/`:
 |-------|---------------------|-----------------|
 | `workload-common/` | `<env>-workload-common` | Vault, Traefik, Redis, CockroachDB (pasta `cockroachdb`, [chart upstream `cockroachdb-parent`](https://github.com/cockroachdb/helm-charts/tree/master/cockroachdb-parent)), JupyterLab, … |
 | `workload-vault/` | `<env>-workload-vault` | Vault Secrets Operator |
-| `workload-obs/` | `<env>-workload-obs` | Observabilidade |
+| `observability/workload-obs/` (Helm) | Ver [`cluster-map.yaml`](config/cluster-map.yaml) → `observability.namespace` (ex.: `platform-workload-obs`) | Observabilidade — **uma stack por cluster**; pastas stub `development/workload-obs/` e `production/workload-obs/` apontam para aqui |
 | `cron-jobs/` | manifests (ex.: `kube-system`) | CronJobs cluster-wide |
 
 ## Convenção Helm
@@ -107,4 +107,4 @@ Dentro de `development/`, `staging/` (opcional), `production/`:
 
 ## Migração a partir de namespaces antigos
 
-Se existirem releases nos namespaces antigos (sem prefixo de ambiente), planear migração para `development-workload-*` / `production-workload-*`.
+Se existirem releases nos namespaces antigos (sem prefixo de ambiente), planear migração para `development-workload-*` / `production-workload-*`. A observabilidade consolidada usa o namespace do **`cluster-map.yaml`** (ex.: **`platform-workload-obs`**); os namespaces `<env>-workload-obs` antigos podem ser removidos após migrar o stack.

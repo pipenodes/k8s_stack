@@ -29,4 +29,11 @@ foreach ($env in @("development", "production")) {
         }
     }
 }
+$obsWl = Join-Path $root "observability\workload-obs"
+if (Test-Path -LiteralPath $obsWl -PathType Container) {
+    Write-Ack (Join-Path $obsWl "deploy.ack")
+    Get-ChildItem -LiteralPath $obsWl -Directory | ForEach-Object {
+        Write-Ack (Join-Path $_.FullName "deploy.ack")
+    }
+}
 Write-Host "Feito."
