@@ -73,8 +73,8 @@ for application_folder_name in "${chart_iter[@]}"; do
       helm_extra_args+=(--timeout 35m)
     fi
     if [ "$basename_application_folder" = "jaeger" ]; then
-      # post-upgrade: Job schema Cassandra pode demorar em cluster pequeno ou CP com taints
-      helm_extra_args+=(--timeout 20m)
+      # post-upgrade: Job schema Cassandra (activeDeadlineSeconds nos values pode ir a 30m)
+      helm_extra_args+=(--timeout 35m)
     fi
     if [ "${KUBE_PROVIDER:-}" = "k3s" ] && case "${WORKLOAD}" in workload-obs|workload-vault|workload-common) true ;; *) false ;; esac; then
       K3S_OVR="${ROOT}/config/helm-overrides/k3s/${basename_application_folder}.yaml"

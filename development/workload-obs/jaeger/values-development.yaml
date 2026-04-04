@@ -268,8 +268,8 @@ schema:
   podLabels: {}
   securityContext: {}
   podSecurityContext: {}
-  ## Deadline for cassandra schema creation job
-  activeDeadlineSeconds: 300
+  ## Deadline for cassandra schema creation job (Cassandra + CQL em EKS/nós lentos pode exceder 5m)
+  activeDeadlineSeconds: 1800
   extraEnv:
     []
     # - name: MODE

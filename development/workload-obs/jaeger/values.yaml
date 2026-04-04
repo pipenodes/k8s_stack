@@ -260,7 +260,7 @@ schema:
   nodeSelector: {}
   affinity: {}
   ## Deadline for cassandra schema creation job
-  activeDeadlineSeconds: 300
+  activeDeadlineSeconds: 1800
   extraEnv:
     []
     # - name: MODE

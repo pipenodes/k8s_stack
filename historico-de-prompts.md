@@ -205,3 +205,9 @@ Implementar plano "local-path em todo o lado (dev + prod) + auditoria": OTel sem
 (Continuação após resumo) Corrigir deploy OTel (schema / EKS vs K3s), timeout Jaeger, alinhar documentação.
 
 **Resultado:** `affinity` + `tolerations` no `values-development.yaml` / `values-production.yaml` do OpenTelemetry; removido `config/helm-overrides/k3s/opentelemetry-collector.yaml`; `deploy-workload.sh`: `--timeout 20m` para `jaeger`; HOWTO §3, §7, §8; este registo.
+
+### Prompt 35
+
+Logs CI EKS: OTel OK; Jaeger `jaeger-cassandra-schema` `DeadlineExceeded`; Loki/Thanos `StatefulSet ... Forbidden`.
+
+**Resultado:** `schema.activeDeadlineSeconds` 300 → 1800 em `development/workload-obs/jaeger/values-development.yaml` e `values.yaml`; `deploy-workload.sh`: timeout Jaeger 20m → 35m; HOWTO §3, §9 (DeadlineExceeded vs Helm); Loki/Thanos: apenas documentado em §10 (imutabilidade VCT); este registo.
