@@ -217,3 +217,9 @@ Logs CI EKS: OTel OK; Jaeger `jaeger-cassandra-schema` `DeadlineExceeded`; Loki/
 Definir `nodeSelector` do Jaeger para o nó `fedora` (K3s dev).
 
 **Resultado:** `development/workload-obs/jaeger/values-development.yaml`: `nodeSelector.kubernetes.io/hostname: fedora` em `schema`, `collector` e `query`; `config/helm-overrides/k3s/jaeger.yaml`: removida `affinity` duplicada (mantidas `tolerations`); HOWTO §9; este registo.
+
+### Prompt 37
+
+Correr `tools/bump-deploy-ack.sh` para todas as pastas, commit e push.
+
+**Resultado:** `bash tools/bump-deploy-ack.sh` → `2026-04-04T00:36:16Z` em 39 `deploy.ack`; commit `49b710b` + push `main`; este registo.
