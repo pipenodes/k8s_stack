@@ -223,3 +223,9 @@ Definir `nodeSelector` do Jaeger para o nó `fedora` (K3s dev).
 Correr `tools/bump-deploy-ack.sh` para todas as pastas, commit e push.
 
 **Resultado:** `bash tools/bump-deploy-ack.sh` → `2026-04-04T00:36:16Z` em 39 `deploy.ack`; commit `49b710b` + push `main`; este registo.
+
+### Prompt 38
+
+Correr `tools/bump-deploy-ack.ps1`.
+
+**Resultado:** Timestamp `2026-04-04T02:09:18Z` em 39 `deploy.ack`; commit `fb38839` + push `main`; este registo.
