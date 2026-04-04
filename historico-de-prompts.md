@@ -237,3 +237,9 @@ Correr `tools/bump-deploy-ack.ps1`.
 Executar o plano de observabilidade única por cluster (sem alterar Vault); apagar primeiro todos os namespaces de workload via `kubectl`.
 
 **Resultado:** Charts em `observability/workload-obs/`; `cluster-map` com `observability.namespace`; `load-cluster-env.sh` / `deploy-workload.sh` / `k8s-deploy.yml` / Traefik e refs OTEL atualizados; remoção de `nodeSelector` `fedora` em `jaeger/values-production.yaml`; documentação HOWTO/README/README-deploy-ack; `bump-deploy-ack.ps1`; `kubectl delete namespace` dos workloads + `platform-workload-obs` (com `--wait`); este registo.
+
+### Prompt 2
+
+Correr `tools/bump-deploy-ack.ps1`, commit e push.
+
+**Resultado:** Timestamp `2026-04-04T03:45:35Z` nos `deploy.ack` afetados; commit + push `main`; este registo.
