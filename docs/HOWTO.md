@@ -116,6 +116,7 @@ Os ficheiros em `helm-overrides/k3s/` **não** devem definir chaves raiz “auxi
 - Em releases antigos **antes** desta alteração, se o upgrade ainda falhar no Job, apaga manualmente: `kubectl delete job -n <namespace> <release>-cassandra-schema`.
 - Em **development**, o subchart Cassandra usa **`cluster_size: 1`** (e `seed_size: 1`) em `values-development.yaml` para evitar gossip entre réplicas quando só há um nó ou pouca rede entre pods.
 - Se o hook falhar com **`DeadlineExceeded`** no Job `*-cassandra-schema`, o pod atingiu **`spec.activeDeadlineSeconds`** (ver `schema.activeDeadlineSeconds` em `values-development.yaml` / `values.yaml`). Em EKS o Cassandra pode demorar vários minutos a aceitar CQL; o timeout do Helm para Jaeger no CI deve ser **igual ou superior** a esse deadline.
+- Em **development** com K3s e nó servidor `fedora`, `values-development.yaml` do chart Jaeger fixa **`nodeSelector.kubernetes.io/hostname: fedora`** em `schema`, `collector` e `query`. Noutro cluster (ex.: EKS), altera ou remove esse selector para bater com `kubectl get nodes --show-labels`.
 
 ## 10. StorageClass `local-path` em todos os ambientes e StatefulSets imutáveis
 

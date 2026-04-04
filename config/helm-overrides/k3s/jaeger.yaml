@@ -1,11 +1,5 @@
+# Scheduling por nó: usar schema/collector/query.nodeSelector em values-development (ex.: hostname fedora).
 schema:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: node-role.kubernetes.io/control-plane
-                operator: Exists
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
@@ -14,13 +8,6 @@ schema:
       operator: Exists
       effect: NoSchedule
 collector:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: node-role.kubernetes.io/control-plane
-                operator: Exists
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
@@ -29,13 +16,6 @@ collector:
       operator: Exists
       effect: NoSchedule
 query:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: node-role.kubernetes.io/control-plane
-                operator: Exists
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists

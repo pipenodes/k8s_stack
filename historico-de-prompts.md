@@ -211,3 +211,9 @@ Implementar plano "local-path em todo o lado (dev + prod) + auditoria": OTel sem
 Logs CI EKS: OTel OK; Jaeger `jaeger-cassandra-schema` `DeadlineExceeded`; Loki/Thanos `StatefulSet ... Forbidden`.
 
 **Resultado:** `schema.activeDeadlineSeconds` 300 → 1800 em `development/workload-obs/jaeger/values-development.yaml` e `values.yaml`; `deploy-workload.sh`: timeout Jaeger 20m → 35m; HOWTO §3, §9 (DeadlineExceeded vs Helm); Loki/Thanos: apenas documentado em §10 (imutabilidade VCT); este registo.
+
+### Prompt 36
+
+Definir `nodeSelector` do Jaeger para o nó `fedora` (K3s dev).
+
+**Resultado:** `development/workload-obs/jaeger/values-development.yaml`: `nodeSelector.kubernetes.io/hostname: fedora` em `schema`, `collector` e `query`; `config/helm-overrides/k3s/jaeger.yaml`: removida `affinity` duplicada (mantidas `tolerations`); HOWTO §9; este registo.
