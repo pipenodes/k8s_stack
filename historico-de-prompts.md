@@ -44,6 +44,24 @@ Executar o bloco `workload-component-switches.yaml` (28–62): staging/productio
 
 **Resultado:** Staging: `workload-common` e `vault-secrets-operator` a `true`, `cron-jobs: {}`. Production: `workload-common` (sem chave `redisinsight`), `vault-secrets-operator` e `cronjob-evicted-pods-cleanup` a `true`. `workload-obs` inalterado (só `minio: true`). Commit e push na `main`.
 
+### Prompt 8
+
+`workload-component-switches.yaml` (28–62): deixar tudo em `false` (staging e production).
+
+**Resultado:** `workload-common`, `workload-vault` e `cron-jobs` a `false`; staging `cron-jobs` explícito com `cronjob-evicted-pods-cleanup: false`; production `workload-common` com `redisinsight: false`. Em `workload-obs` mantido `minio: true` e restantes `false` (só object storage na stack obs).
+
+### Prompt 9
+
+Mover MinIO para `storage/workload-storage`, novo alvo `workload-storage` no deploy, ordem CI: storage → observability → resto; `cluster-map` com `storage.*`, obs-bootstrap cross-namespace para MinIO.
+
+**Resultado:** Chart MinIO em `storage/workload-storage/minio/`; `cluster-map.yaml` com `storage.namespace` / `storage.valuesFile` / `deployForEnvironments` (skip); `load-cluster-env.sh` exporta `STORAGE_*` e `SKIP_WORKLOAD_STORAGE`; `deploy-workload.sh` suporta `workload-storage`; switches `workload-storage.minio`; `k8s-deploy.yml` com `storage/**`, passos workload-storage antes de workload-obs; `obs-bootstrap/00-minio-root-secret.yaml`, Job e Thanos com FQDN `minio.platform-workload-storage.svc:9000`; Loki/Tempo endpoints atualizados; bump-deploy-ack + HOWTO/README/README-deploy-ack + README obs.
+
+### Prompt 10
+
+Executar `tools/bump-deploy-ack.ps1`, commit e push.
+
+**Resultado:** Timestamp `2026-04-04T05:56:27Z` em todos os `deploy.ack` (development, production, observability/workload-obs, storage/workload-storage); commit `58efb86` na `main` e push para `origin`.
+
 ## 2026-04-03
 
 ### Prompt 1
