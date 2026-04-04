@@ -1,0 +1,62 @@
+# Liga/desliga charts por ambiente lógico (rollout faseado).
+# Ausência de chave = true (comportamento por omissão).
+# Chaves workload-obs = nome da pasta em observability/workload-obs.
+# workload-common / workload-vault = pasta sob <repoPath>/<workload>/.
+# cron-jobs = stem do ficheiro .yaml ou nome da pasta em <repoPath>/cron-jobs.
+version: 1
+
+environments:
+  development:
+    workload-obs:
+      minio: true
+      obs-bootstrap: false
+      kube-prometheus-stack: false
+      loki: false
+      tempo-distributed: false
+      alloy: false
+    workload-common:
+      traefik: false
+      vault: false
+      redis: false
+      redisinsight: false
+      cockroachdb: false
+    workload-vault:
+      vault-secrets-operator: false
+    cron-jobs:
+      cronjob-evicted-pods-cleanup: false
+
+  staging:
+    workload-obs:
+      minio: true
+      obs-bootstrap: false
+      kube-prometheus-stack: false
+      loki: false
+      tempo-distributed: false
+      alloy: false
+    workload-common:
+      traefik: true
+      vault: true
+      redis: true
+      redisinsight: true
+      cockroachdb: true
+    workload-vault:
+      vault-secrets-operator: true
+    cron-jobs: {}
+
+  production:
+    workload-obs:
+      minio: true
+      obs-bootstrap: false
+      kube-prometheus-stack: false
+      loki: false
+      tempo-distributed: false
+      alloy: false
+    workload-common:
+      traefik: true
+      vault: true
+      redis: true
+      cockroachdb: true
+    workload-vault:
+      vault-secrets-operator: true
+    cron-jobs:
+      cronjob-evicted-pods-cleanup: true

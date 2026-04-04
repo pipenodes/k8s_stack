@@ -1,5 +1,49 @@
 # Histórico de prompts
 
+## 2026-04-04
+
+### Prompt 1
+
+Implementar plano de observabilidade (stack MinIO, kube-prometheus-stack+Thanos, Loki, Tempo, Alloy), `workload-component-switches`, `cluster-map` com `valuesFile`/topologia ao nível do cluster, scripts de deploy e substituição total de `observability/workload-obs`.
+
+**Resultado:** Nova stack em `observability/workload-obs/` (wrappers Helm + `obs-bootstrap`), `config/workload-component-switches.yaml`, `cluster-map.yaml` atualizado, `load-cluster-env.sh` e `deploy-workload.sh`/`deploy-cronjobs.sh` com switches e `OBS_VALUES_FILE`, overlays K3s ajustados (removidos Jaeger/Promtail/Thanos standalone/blackbox/grafana overlay antigo), HOWTO/README/histórico atualizados.
+
+### Prompt 2
+
+Implementar (continuação): alinhar Traefik e docs auxiliares à stack de observabilidade sem Jaeger.
+
+**Resultado:** Removido `IngressRoute` `jaeger` / `jaeger-internal.dev.goapice.com` de `development/workload-common/traefik/values-development.yaml`; exemplo em `tools/README-deploy-ack.md` atualizado de Promtail para Loki.
+
+### Prompt 3
+
+Neste momento só `local-path` e MinIO; o resto da observabilidade desabilitado.
+
+**Resultado:** Em `config/workload-component-switches.yaml`, para `workload-obs` em development/staging/production: só `minio: true`; `obs-bootstrap`, `kube-prometheus-stack`, `loki`, `tempo-distributed` e `alloy` a `false`. PVC do MinIO continua com `storageClass: local-path` nos `minio/values-*.yaml`.
+
+### Prompt 4
+
+Correção: manter todas as linhas dos componentes com `false`, não remover chaves.
+
+**Resultado:** Confirmado: as chaves `obs-bootstrap`, `kube-prometheus-stack`, `loki`, `tempo-distributed` e `alloy` permanecem no YAML com valor `false` (não foram removidas); removido apenas o comentário editorial em `workload-obs` (development).
+
+### Prompt 5
+
+Em `workload-component-switches.yaml` (development), `workload-common`, `workload-vault` e `cron-jobs`: tudo `false`.
+
+**Resultado:** Chaves mantidas; valores `true` → `false` para traefik, vault, redis, redisinsight, cockroachdb, vault-secrets-operator e cronjob-evicted-pods-cleanup em development.
+
+### Prompt 6
+
+Igual para staging e production (bloco 28–62): tudo `false` exceto `minio` em `workload-obs`.
+
+**Resultado:** `workload-common`, `workload-vault` e `cron-jobs` a `false` em staging e production; staging `cron-jobs: {}` substituído por `cronjob-evicted-pods-cleanup: false`; em production `workload-common` ganhou `redisinsight: false` para alinhar às outras linhas.
+
+### Prompt 7
+
+Executar o bloco `workload-component-switches.yaml` (28–62): staging/production com common/vault/cron ativos; commit e push.
+
+**Resultado:** Staging: `workload-common` e `vault-secrets-operator` a `true`, `cron-jobs: {}`. Production: `workload-common` (sem chave `redisinsight`), `vault-secrets-operator` e `cronjob-evicted-pods-cleanup` a `true`. `workload-obs` inalterado (só `minio: true`). Commit e push na `main`.
+
 ## 2026-04-03
 
 ### Prompt 1
