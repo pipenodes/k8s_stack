@@ -72,6 +72,10 @@ for application_folder_name in "${chart_iter[@]}"; do
       # Hooks de admission (Jobs patch/cert) em nó único / CPU limitada podem exceder 20m
       helm_extra_args+=(--timeout 35m)
     fi
+    if [ "$basename_application_folder" = "jaeger" ]; then
+      # post-upgrade: Job schema Cassandra pode demorar em cluster pequeno ou CP com taints
+      helm_extra_args+=(--timeout 20m)
+    fi
     if [ "${KUBE_PROVIDER:-}" = "k3s" ] && case "${WORKLOAD}" in workload-obs|workload-vault|workload-common) true ;; *) false ;; esac; then
       K3S_OVR="${ROOT}/config/helm-overrides/k3s/${basename_application_folder}.yaml"
       if [ -f "${K3S_OVR}" ]; then

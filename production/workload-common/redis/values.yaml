@@ -21,7 +21,7 @@ global:
   ##
   imagePullSecrets: []
   defaultStorageClass: "local-path"
-  storageClass: ""
+  storageClass: "local-path"
   ## Security parameters
   ##
   security:
@@ -525,7 +525,7 @@ master:
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
     ## If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner
     ##
-    storageClass: ""
+    storageClass: "local-path"
     ## @param master.persistence.accessModes Persistent Volume access modes
     ##
     accessModes:
@@ -1009,7 +1009,7 @@ replica:
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
     ## If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner
     ##
-    storageClass: ""
+    storageClass: "local-path"
     ## @param replica.persistence.accessModes Persistent Volume access modes
     ##
     accessModes:
@@ -1334,7 +1334,7 @@ sentinel:
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
     ## If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner
     ##
-    storageClass: ""
+    storageClass: "local-path"
     ## @param sentinel.persistence.accessModes Persistent Volume access modes
     ##
     accessModes:

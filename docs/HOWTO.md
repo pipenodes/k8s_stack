@@ -7,7 +7,7 @@ Guia operacional para navegar no monorepo, configurar clusters e perceber o que 
 - **Pastas por ambiente lógico:** `development/`, `staging/` (opcional), `production/` — cada uma com `workload-common`, `workload-vault`, `workload-obs`, `cron-jobs`.
 - **Namespace no cluster:** `<repoPath>-<workload>` — exemplo: pasta `development/workload-common` → namespace **`development-workload-common`**.
 - **Deploy:** GitHub Actions na branch `main`, com filtros de paths; cada job usa um **GitHub Environment** (`development`, `staging`, `production`) para secrets.
-- **Ordem no CI (mesmo job):** com `KUBE_PROVIDER=k3s`, após kubeconfig válido aplica-se a **StorageClass** [`config/k8s/storageclass-local-path.yaml`](../config/k8s/storageclass-local-path.yaml); depois **`workload-obs`** (Prometheus CRDs), **`workload-vault`**, **`workload-common`**, **`cron-jobs`**. Um push que altere só `workload-common` não corre obs nesse run — o cluster deve já ter observabilidade (ou correr antes um deploy de `workload-obs`). Em **EKS** o passo da StorageClass não corre (`rancher.io/local-path` é específico do K3s).
+- **Ordem no CI (mesmo job):** com `KUBE_PROVIDER=k3s`, após kubeconfig válido aplica-se a **StorageClass** [`config/k8s/storageclass-local-path.yaml`](../config/k8s/storageclass-local-path.yaml); depois **`workload-obs`** (Prometheus CRDs), **`workload-vault`**, **`workload-common`**, **`cron-jobs`**. Um push que altere só `workload-common` não corre obs nesse run — o cluster deve já ter observabilidade (ou correr antes um deploy de `workload-obs`). Os `values-*.yaml` de **development** e **production** assumem **`local-path`** onde há PVC; em **EKS** (ou outro provedor) o workflow **não** aplica esse manifest automaticamente — é preciso garantir no cluster o **mesmo nome** `local-path` e um provisionador compatível com `rancher.io/local-path`, ou ajustar o pipeline, senão os PVC ficam pendentes.
 - **Dentro de `workload-obs`:** o [`deploy-workload.sh`](../.github/scripts/deploy-workload.sh) instala **`kube-prometheus-stack` antes** dos outros charts (ordem alfabética entre o resto), para existirem CRDs do Prometheus Operator antes de charts que criam `ServiceMonitor` (ex.: Grafana). No mesmo passo, cria-se de forma idempotente o namespace **`<env>-workload-vault`** quando ainda não correu o job `workload-vault` (ex.: OpenTelemetry com `namespaceOverride` para vault).
 - **K3s + Traefik:** com `k3s`, o script **não** faz `helm` da pasta `traefik` em `workload-common` (usa o Traefik nativo do K3s).
 - **CockroachDB:** antes do `helm` do chart `cockroachdb`, o CI corre [`.github/scripts/apply-crdb-operator-crds.sh`](../.github/scripts/apply-crdb-operator-crds.sh) (CRD remoto; opcional `CRDB_OPERATOR_CRD_REF` para fixar tag/commit). Após alterar `Chart.yaml` de charts com dependências, corre localmente `helm dependency update` e commit dos `charts/*.tgz` / `Chart.lock` se existir.
@@ -65,7 +65,7 @@ Cada chart tem chaves diferentes (`replicaCount` vs `replica.replicaCount`, etc.
 | `configure-kube.sh` | `eks` → `aws eks update-kubeconfig` (2.º arg = nome do cluster); `k3s` → lê **`KUBE_CONFIG`** (texto do kubeconfig), grava ficheiro; o `source apply-kubeconfig-env.sh` no mesmo `run` exporta **`KUBECONFIG`** = path. |
 | `ensure-local-path-storageclass.sh` | Se `KUBE_PROVIDER=k3s`, `kubectl apply` da StorageClass `local-path` em `config/k8s/`. |
 | `apply-crdb-operator-crds.sh` | `kubectl apply` do CRD `CrdbCluster` a partir do repositório `cockroachdb-operator` (ref `CRDB_OPERATOR_CRD_REF`, default `master`). |
-| `deploy-workload.sh` | Cria namespace do workload; Helm/kubectl por pasta; em `k3s` salta chart `traefik`; antes de cockroachdb aplica CRDs; merge dos overrides de topologia; **`kube-prometheus-stack`** com `--timeout 35m`. Em **`workload-obs`:** `kube-prometheus-stack` primeiro; namespace `<env>-workload-vault` criado se necessário. Com **`KUBE_PROVIDER=k3s`** e workload `workload-obs` / `workload-vault` / `workload-common`, faz merge opcional de [`config/helm-overrides/k3s/<nome-do-chart>.yaml`](../config/helm-overrides/k3s/) (scheduling no nó control-plane / servidor). |
+| `deploy-workload.sh` | Cria namespace do workload; Helm/kubectl por pasta; em `k3s` salta chart `traefik`; antes de cockroachdb aplica CRDs; merge dos overrides de topologia; **`kube-prometheus-stack`** com `--timeout 35m`; **`jaeger`** com `--timeout 20m` (hooks do Job de schema Cassandra). Em **`workload-obs`:** `kube-prometheus-stack` primeiro; namespace `<env>-workload-vault` criado se necessário. Com **`KUBE_PROVIDER=k3s`** e workload `workload-obs` / `workload-vault` / `workload-common`, faz merge opcional de [`config/helm-overrides/k3s/<nome-do-chart>.yaml`](../config/helm-overrides/k3s/) (scheduling no nó control-plane / servidor). |
 | `deploy-cronjobs.sh` | `kubectl apply` em `cron-jobs/`. |
 | [`tools/bump-deploy-ack.sh`](../tools/bump-deploy-ack.sh) / [`bump-deploy-ack.ps1`](../tools/bump-deploy-ack.ps1) | Atualizam todos os `deploy.ack` com timestamp **ISO 8601 UTC** (`YYYY-MM-DDTHH:MM:SSZ`) para o paths-filter disparar deploy; ver [README-deploy-ack](../tools/README-deploy-ack.md). |
 
@@ -98,7 +98,7 @@ Charts como **Loki**, **Promtail** e **OpenTelemetry** criam `ClusterRole` com n
 
 - **Loki:** `fullnameOverride` na raiz (`development-loki` / `production-loki`) — o serviço do gateway passa a `<fullname>-gateway` (ex.: `development-loki-gateway`). Atualizar referências em OTel, Promtail e Traefik (`IngressRoute`).
 - **Promtail:** `fullnameOverride` por ambiente (`development-promtail` / `production-promtail`).
-- **OpenTelemetry:** `clusterRole.name` e `clusterRole.clusterRoleBinding.name` por ambiente; o **Service** mantém o nome `opentelemetry-collector` (DNS em Loki inalterado).
+- **OpenTelemetry:** `clusterRole.name` e `clusterRole.clusterRoleBinding.name` por ambiente; o **Service** mantém o nome `opentelemetry-collector` (DNS em Loki inalterado). **Affinity** e **tolerations** (control-plane) estão em `values-development.yaml` / `values-production.yaml` do chart — válidas em EKS e K3s e compatíveis com o `values.schema.json` do chart (sem ficheiro K3s extra para este release).
 
 ## 8. K3s: scheduling no servidor (control-plane)
 
@@ -108,8 +108,17 @@ Incluem **nodeAffinity** `requiredDuringScheduling` com `Exists` em `node-role.k
 
 **DaemonSets** (ex.: Promtail): o override K3s aplica só **tolerations** (sem affinity a control-plane) para o agente de logs continuar a poder correr em todos os nós.
 
+Os ficheiros em `helm-overrides/k3s/` **não** devem definir chaves raiz “auxiliares” (ex. âncoras YAML) — charts com `values.schema.json` estrito rejeitam propriedades extra no topo do values. O **OpenTelemetry Collector** não usa overlay K3s: scheduling está nos `values-*.yaml` do próprio chart.
+
 ## 9. Jaeger (Cassandra): Job de schema e réplicas
 
 - O Job `*-cassandra-schema` é um **hook** Helm (`post-install`/`post-upgrade`) com `helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded`, para o upgrade **apagar e recriar** o Job em vez de tentar patch ao `spec.template` (imutável no Kubernetes).
 - Em releases antigos **antes** desta alteração, se o upgrade ainda falhar no Job, apaga manualmente: `kubectl delete job -n <namespace> <release>-cassandra-schema`.
 - Em **development**, o subchart Cassandra usa **`cluster_size: 1`** (e `seed_size: 1`) em `values-development.yaml` para evitar gossip entre réplicas quando só há um nó ou pouca rede entre pods.
+
+## 10. StorageClass `local-path` em todos os ambientes e StatefulSets imutáveis
+
+- **Repositório:** `values-development.yaml` e `values-production.yaml` alinham **`local-path`** em PVCs relevantes (Loki, Thanos, Grafana, Redis master/replica/sentinel, Tempo, Vault data/audit, CockroachDB, manifests `jupyterlab`, etc.), para a mesma política em dev e prod.
+- **Cluster:** com K3s, o CI aplica [`config/k8s/storageclass-local-path.yaml`](../config/k8s/storageclass-local-path.yaml). Noutro tipo de cluster, se mantiveres os mesmos values, garante manualmente StorageClass `local-path` + provisionador `rancher.io/local-path` (ou equivalente).
+- **Erro `StatefulSet ... Forbidden` no `helm upgrade`:** o Kubernetes **não permite** alterar `volumeClaimTemplates` (por exemplo `storageClassName` ou nome do volume claim) num StatefulSet **já existente**. Se os pods foram criados com outra classe e os values passam a pedir `local-path`, o patch falha mesmo com o Git correto. Caminhos típicos: janela de manutenção com **backup**, remoção controlada do StatefulSet (e, se aplicável, PVCs) e novo `helm upgrade`; ou novo nome de release/`fullnameOverride` (novos STS) + migração de dados; ou manter a classe já presente nos PVC até haver plano de migração.
+- **Diagnóstico:** `kubectl get storageclass`; `kubectl get pvc -n <namespace>`; `kubectl get sts -n <namespace> -o yaml` e inspecionar `spec.volumeClaimTemplates`.

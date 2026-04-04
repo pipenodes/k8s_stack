@@ -193,3 +193,15 @@ Executar `bump-deploy-ack`, commit e push; opcionalmente limpar Job Jaeger no cl
 Voltar a correr `bump-deploy-ack.ps1`, commit e push.
 
 **Resultado:** Timestamp `2026-04-03T23:33:28Z` em 39 `deploy.ack`; commit `3470dd5` + push `main`; este registo.
+
+### Prompt 33
+
+Implementar plano "local-path em todo o lado (dev + prod) + auditoria": OTel sem âncoras raiz, `local-path` explícito em Redis/Traefik/Tempo/Vault, inlinar todos os `helm-overrides/k3s/*.yaml`, HOWTO §10 e validação.
+
+**Resultado:** `opentelemetry-collector.yaml` e restantes K3s sem `x_cp_*`; Redis (global + master/replica/sentinel), Traefik, Tempo (`storageClass: null` → `local-path`), Vault data/audit, exemplos OTel statefulset; HOWTO §1, §8, nova §10; `kubectl`: `local-path` default no cluster, PVCs Loki/Thanos ainda `gp3-default` (pendentes) até migração de STS/VCT; este registo.
+
+### Prompt 34
+
+(Continuação após resumo) Corrigir deploy OTel (schema / EKS vs K3s), timeout Jaeger, alinhar documentação.
+
+**Resultado:** `affinity` + `tolerations` no `values-development.yaml` / `values-production.yaml` do OpenTelemetry; removido `config/helm-overrides/k3s/opentelemetry-collector.yaml`; `deploy-workload.sh`: `--timeout 20m` para `jaeger`; HOWTO §3, §7, §8; este registo.

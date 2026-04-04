@@ -20,7 +20,7 @@ global:
   # scope: admin-api, compactor, distributor, enterprise-federation-frontend, gateway, ingester, memcached, metrics-generator, querier, query-frontend, tokengen
   extraEnv: []
   # -- Global storage class to be used for persisted components
-  storageClass: null
+  storageClass: local-path
 fullnameOverride: ''
 # fullnameOverride: tempo
 
@@ -217,7 +217,7 @@ ingester:
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
     # If empty or set to null, no storageClassName spec is
     # set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS, and OpenStack).
-    storageClass: null
+    storageClass: local-path
     # -- Annotations for ingester's persist volume claim
     annotations: {}
     # -- Labels for ingester's persist volume claim
@@ -283,7 +283,7 @@ ingester:
         # If defined, storageClassName: <storageClass>
         # If set to "-", then use `storageClassName: ""`, which disables dynamic provisioning
         # If undefined or set to null (the default), then fall back to the value of `ingester.persistentVolume.storageClass`.
-        storageClass: null
+        storageClass: local-path
       # -- Name of the zone, used in labels and selectors. Must follow Kubernetes naming restrictions: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
       - name: zone-b
         # -- nodeselector to restrict where pods of this zone can be placed. E.g.:
@@ -296,7 +296,7 @@ ingester:
         # If defined, storageClassName: <storageClass>
         # If set to "-", then use `storageClassName: ""`, which disables dynamic provisioning
         # If undefined or set to null (the default), then fall back to the value of `ingester.persistentVolume.storageClass`.
-        storageClass: null
+        storageClass: local-path
       # -- Name of the zone, used in labels and selectors. Must follow Kubernetes naming restrictions: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
       - name: zone-c
         # -- nodeselector to restrict where pods of this zone can be placed. E.g.:
@@ -309,7 +309,7 @@ ingester:
         # If defined, storageClassName: <storageClass>
         # If set to "-", then use `storageClassName: ""`, which disables dynamic provisioning
         # If undefined or set to null (the default), then fall back to the value of `ingester.persistentVolume.storageClass`.
-        storageClass: null
+        storageClass: local-path
 
 # Configuration for the metrics-generator
 metricsGenerator:
@@ -397,7 +397,7 @@ metricsGenerator:
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
     # If empty or set to null, no storageClassName spec is
     # set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS, and OpenStack).
-    storageClass: null
+    storageClass: local-path
     # -- Annotations for metrics generator PVCs
     annotations: {}
     # -- Labels for metrics generator PVCs

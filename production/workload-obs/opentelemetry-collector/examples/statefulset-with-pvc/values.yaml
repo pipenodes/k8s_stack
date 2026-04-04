@@ -23,7 +23,7 @@ statefulset:
     - metadata:
         name: queue
       spec:
-        storageClassName: standard
+        storageClassName: local-path
         accessModes:
           - ReadWriteOnce
         resources:
